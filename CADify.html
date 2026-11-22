@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c4c0b7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CADify">
+<link rel="manifest" href="manifest.webmanifest">
+<title>CADify</title>
+<style>
+:root{
+  /* CADify house palette — off-form concrete + black brand */
+  --concrete-1:#dcd9d1; --concrete-2:#c4c0b7; --concrete-3:#efece5;
+  --off-black:#1a1917; --paper:#faf8f3; --paper-dim:#6b685f;
+  --bg:var(--concrete-2); --panel:var(--concrete-1); --panel2:var(--concrete-3);
+  --line:#a8a49a; --txt:#1b1a17; --dim:#5f5c53;
+  --accent:#1a1917; --accent-dim:#000000; --brand:#141312;
+  --warn:#a8471f; --bad:#a8471f; --good:#3f7d38; --chip:#e7e3da;
+  --shadow:0 1px 2px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(ellipse at top left, rgba(255,255,255,0.5), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 3px),
+    var(--concrete-2);
+  color:var(--txt);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  padding-bottom:78px; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0 0 .4em}
+a{color:var(--brand)}
+button{font-family:inherit}
+.app-bar{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg,#d3cfc6,#c6c2b9);
+  border-bottom:3px solid var(--brand);
+  padding:12px 16px calc(12px);display:flex;align-items:center;gap:10px;
+  padding-top:max(12px,env(safe-area-inset-top));
+}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.02em;font-size:20px;color:var(--brand)}
+.logo .mark{
+  width:30px;height:30px;border-radius:5px;flex:0 0 auto;
+  background:var(--brand);
+  display:grid;place-items:center;color:var(--paper);font-weight:900;font-size:14px;
+}
+.spacer{flex:1}
+.client-pick{
+  background:var(--paper);border:1px solid var(--line);color:var(--txt);
+  border-radius:3px;padding:8px 10px;font-size:13px;max-width:46vw;
+}
+.wrap{padding:16px;max-width:760px;margin:0 auto}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.45),rgba(0,0,0,0.02)),var(--panel);
+  border:1px solid var(--line);border-radius:4px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:700;
+  display:flex;align-items:center;gap:8px}
+.card h2::before{content:"";width:14px;height:2px;background:var(--accent);display:inline-block;flex:0 0 auto}
+.muted{color:var(--dim)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:var(--concrete-3);border:1px solid var(--line);border-radius:3px;padding:14px}
+.stat .n{font-size:26px;font-weight:800;line-height:1;color:var(--txt)}
+.stat .l{font-size:11px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+label{display:block;font-size:12.5px;color:var(--dim);margin:10px 0 4px;font-weight:600}
+input,select,textarea{
+  width:100%;background:var(--paper);border:1px solid var(--line);color:var(--txt);
+  border-radius:3px;padding:11px 12px;font-size:16px;outline:none;
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:linear-gradient(180deg,var(--accent),var(--accent-dim));color:var(--paper);border:none;border-radius:3px;
+  padding:12px 15px;font-weight:800;font-size:13.5px;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;
+  box-shadow:0 2px 0 var(--accent-dim);
+}
+.btn:active{transform:translateY(1px);box-shadow:0 1px 0 var(--accent-dim)}
+.btn.sec{background:var(--concrete-3);color:var(--txt);border:1px solid var(--line);box-shadow:none}
+.btn.ghost{background:transparent;color:var(--dim);border:1px solid var(--line);box-shadow:none}
+.btn.sm{padding:8px 11px;font-size:12px;border-radius:3px;box-shadow:none}
+.btn.block{width:100%}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--line);box-shadow:none}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border:1px solid var(--line);
+  border-radius:3px;padding:5px 10px;font-size:12px;color:var(--dim)}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:2px;padding:3px 9px;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em}
+.b-good{background:rgba(63,125,56,.16);color:var(--good)}
+.b-bad{background:rgba(168,71,31,.16);color:var(--bad)}
+.b-warn{background:rgba(168,71,31,.14);color:var(--warn)}
+.b-dim{background:rgba(20,19,18,.08);color:var(--dim)}
+.list-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.list-item:last-child{border-bottom:none}
+.avatar{width:40px;height:40px;border-radius:3px;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--concrete-3);border:1px solid var(--line);font-weight:800;color:var(--brand)}
+.ttl{font-weight:700;color:var(--txt)}
+.sub{font-size:12.5px;color:var(--dim)}
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
+  background:linear-gradient(180deg,#cfcbc2,#c4c0b7);border-top:3px solid var(--brand);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav button{
+  flex:1;background:none;border:none;color:var(--paper-dim);padding:9px 4px 10px;
+  font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+}
+.nav button.on{color:var(--brand)}
+.nav svg{width:22px;height:22px}
+.view{display:none}
+.view.on{display:block}
+.hidden{display:none!important}
+.sep{height:1px;background:var(--line);margin:12px 0}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--dim)}
+.pill-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.pill-row .chip{white-space:nowrap}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(26,25,23,.55);display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:6px 6px 0 0;width:100%;max-width:760px;
+  max-height:92vh;overflow:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
+.sheet h2{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--txt);font-weight:800}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .dow{font-size:11px;color:var(--dim);text-align:center;padding:4px 0;font-weight:700}
+.cal .day{aspect-ratio:1;border-radius:3px;border:1px solid var(--line);background:var(--paper);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:5px 2px;font-size:12.5px;position:relative;cursor:pointer}
+.cal .day.out{opacity:.35}
+.cal .day.today{border-color:var(--accent);border-width:2px}
+.cal .day .dots{display:flex;gap:2px;margin-top:auto;flex-wrap:wrap;justify-content:center}
+.cal .day .dot{width:6px;height:6px;border-radius:50%;background:var(--brand)}
+.cal .day .dot.rain{background:var(--warn)}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--off-black);
+  border:1px solid rgba(250,248,243,0.28);color:var(--paper);padding:11px 16px;border-radius:3px;font-size:13.5px;font-weight:600;
+  box-shadow:0 6px 18px rgba(0,0,0,.3);z-index:60;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1;bottom:100px}
+.empty{text-align:center;color:var(--dim);padding:26px 10px}
+.empty .big{font-size:40px;margin-bottom:6px}
+.mod-tile{display:flex;align-items:center;gap:12px;background:var(--concrete-3);border:1px solid var(--line);
+  border-radius:4px;padding:14px;cursor:pointer;margin-bottom:10px}
+.mod-tile .ic{width:44px;height:44px;border-radius:4px;flex:0 0 auto;display:grid;place-items:center;font-size:22px;
+  background:var(--paper);border:1px solid var(--line)}
+.alert{border-left:3px solid var(--warn);background:rgba(168,71,31,.09);padding:10px 12px;border-radius:0 3px 3px 0;margin-bottom:8px;font-size:13.5px}
+.alert.ok{border-color:var(--good);background:rgba(63,125,56,.10)}
+.check{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.08);font-size:13.5px}
+.check:last-child{border-bottom:none}
+.check .st{flex:0 0 auto;margin-top:1px}
+small.note{color:var(--dim);font-size:11.5px;display:block;margin-top:4px}
+.tabbar{display:flex;gap:6px;background:var(--concrete-3);border:1px solid var(--line);border-radius:3px;padding:4px;margin-bottom:14px}
+.tabbar button{flex:1;background:none;border:none;color:var(--dim);padding:9px;border-radius:2px;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+.tabbar button.on{background:var(--accent);color:var(--paper)}
+</style>
+</head>
+<body>
+
+<div class="app-bar">
+  <div class="logo"><span class="mark">CD</span>CADify</div>
+  <div class="spacer"></div>
+  <select class="client-pick" id="clientPick" onchange="App.setActiveClient(this.value)"></select>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div class="view on" id="v-dash">
+  <div class="wrap">
+    <h1 style="font-size:22px;margin-bottom:2px">Dashboard</h1>
+    <p class="muted" id="dashHello" style="margin-top:0"></p>
+    <div class="grid">
+      <div class="stat"><div class="n" id="sClients">0</div><div class="l">Clients</div></div>
+      <div class="stat"><div class="n" id="sJobs">0</div><div class="l">Jobs scheduled</div></div>
+      <div class="stat"><div class="n" id="sCalcs">0</div><div class="l">Calculations saved</div></div>
+      <div class="stat"><div class="n" id="sFlags">0</div><div class="l">Compliance flags</div></div>
+    </div>
+
+    <div class="card">
+      <h2>⛅ Weather watch</h2>
+      <div id="weatherWatch"><p class="muted">No outdoor jobs flagged. Schedule an outdoor job and tap “Check BOM” to see rain risk here.</p></div>
+    </div>
+
+    <div class="card">
+      <h2>🕑 Recent activity</h2>
+      <div id="recent"></div>
+    </div>
+
+    <div class="card">
+      <h2>Quick actions</h2>
+      <div class="row">
+        <button class="btn sm" onclick="App.go('clients');App.openClientForm()">+ New client</button>
+        <button class="btn sm sec" onclick="App.go('calc')">Open calculator</button>
+        <button class="btn sm sec" onclick="App.go('schedule')">Schedule job</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CLIENTS ================= -->
+<div class="view" id="v-clients">
+  <div class="wrap">
+    <div class="row" style="align-items:center;justify-content:space-between">
+      <h1 style="font-size:22px;margin:0">Clients</h1>
+      <button class="btn sm" onclick="App.openClientForm()">+ New</button>
+    </div>
+    <div class="card" id="clientList" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- ============ CLIENT FOLDER (detail) ============ -->
+<div class="view" id="v-folder">
+  <div class="wrap">
+    <button class="btn sm ghost" onclick="App.go('clients')">← Clients</button>
+    <div class="card" style="margin-top:12px">
+      <div class="row" style="align-items:center;gap:12px">
+        <div class="avatar" id="fAvatar" style="width:52px;height:52px;font-size:20px"></div>
+        <div style="flex:1">
+          <h1 style="font-size:20px;margin:0" id="fName"></h1>
+          <div class="sub" id="fMeta"></div>
+        </div>
+      </div>
+      <div class="pill-row" id="fContact" style="margin-top:12px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn sm sec" onclick="App.openClientForm(App.state.viewClientId)">Edit</button>
+        <button class="btn sm sec" onclick="App.exportClient(App.state.viewClientId)">Export folder</button>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <button class="on" data-ftab="calcs" onclick="App.folderTab('calcs')">Calculations</button>
+      <button data-ftab="jobs" onclick="App.folderTab('jobs')">Jobs</button>
+      <button data-ftab="compliance" onclick="App.folderTab('compliance')">Compliance</button>
+    </div>
+
+    <div id="fTab-calcs">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0;font-size:16px">Saved calculations</h2>
+        <button class="btn sm" onclick="App.go('calc')">+ Run calculator</button>
+      </div>
+      <div class="card" id="fCalcs" style="margin-top:10px"></div>
+    </div>
+
+    <div id="fTab-jobs" class="hidden">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0;font-size:16px">Jobs</h2>
+        <button class="btn sm" onclick="App.openJobForm(null, App.state.viewClientId)">+ Add job</button>
+      </div>
+      <div class="card" id="fJobs" style="margin-top:10px"></div>
+    </div>
+
+    <div id="fTab-compliance" class="hidden">
+      <div class="card"><div id="fCompliance"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CALCULATORS ================= -->
+<div class="view" id="v-calc">
+  <div class="wrap">
+    <h1 style="font-size:22px">Calculators</h1>
+    <p class="muted" id="calcClientNote" style="margin-top:-4px"></p>
+    <div id="calcMenu"></div>
+
+    <!-- Sample working module: NSW Pool Fence -->
+    <div class="card hidden" id="calc-poolfence">
+      <button class="btn sm ghost" onclick="App.calcHome()">← All calculators</button>
+      <h2 style="margin-top:12px">🏊 Pool Fence Calculator <span class="badge b-good">live sample</span></h2>
+      <p class="muted" style="margin-top:-4px">Enter measurements. CADify checks them against NSW / AS 1926.1 and files the result in the client folder.</p>
+      <div class="grid">
+        <div><label>Fence height (mm)</label><input type="number" id="pf_height" value="1200" inputmode="numeric"></div>
+        <div><label>Gap under fence (mm)</label><input type="number" id="pf_gapunder" value="90" inputmode="numeric"></div>
+        <div><label>Vertical bar gap (mm)</label><input type="number" id="pf_bargap" value="90" inputmode="numeric"></div>
+        <div><label>Latch height (mm)</label><input type="number" id="pf_latch" value="1500" inputmode="numeric"></div>
+      </div>
+      <label>Gate</label>
+      <div class="row">
+        <label class="chip"><input type="checkbox" id="pf_selfclose" checked style="width:auto;margin-right:6px">Self-closing</label>
+        <label class="chip"><input type="checkbox" id="pf_selflatch" checked style="width:auto;margin-right:6px">Self-latching</label>
+        <label class="chip"><input type="checkbox" id="pf_opensaway" checked style="width:auto;margin-right:6px">Opens away from pool</label>
+      </div>
+      <label>Barrier type</label>
+      <select id="pf_boundary">
+        <option value="pool">Dedicated pool fence (≥1200mm)</option>
+        <option value="boundary">Boundary fence used as barrier (≥1800mm)</option>
+      </select>
+      <div class="row">
+        <label class="chip"><input type="checkbox" id="pf_cpr" checked style="width:auto;margin-right:6px">CPR sign present & readable</label>
+        <label class="chip"><input type="checkbox" id="pf_ncz" checked style="width:auto;margin-right:6px">900mm non-climbable zone clear</label>
+      </div>
+      <div style="margin-top:14px" class="row">
+        <button class="btn" onclick="Calc.poolFence()">Check & save to folder</button>
+      </div>
+      <div id="pf_result" style="margin-top:14px"></div>
+    </div>
+
+    <!-- Generic stub module for pasted calculators -->
+    <div class="card hidden" id="calc-stub">
+      <button class="btn sm ghost" onclick="App.calcHome()">← All calculators</button>
+      <h2 style="margin-top:12px" id="stubTitle"></h2>
+      <div class="alert">This is a placeholder. Paste your existing <b id="stubName"></b> HTML into this chat and I’ll wire it in here so its result files straight into the client folder — using the same 3-line bridge the Pool Fence sample uses.</div>
+      <label>Quick manual entry (so you can test the folder now)</label>
+      <label>Result title</label><input id="stub_title" placeholder="e.g. Frameless screen — ensuite">
+      <label>Summary / measurements</label><textarea id="stub_summary" rows="3" placeholder="Key figures, quantities, price…"></textarea>
+      <div style="margin-top:12px"><button class="btn" onclick="Calc.stubSave()">Save to folder</button></div>
+      <div id="stub_result" style="margin-top:12px"></div>
+    </div>
+
+    <!-- Mounted calculator (iframe — keeps the calculator's own look & exports) -->
+    <div class="hidden" id="calc-frame">
+      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px">
+        <button class="btn sm ghost" onclick="App.calcHome()">← All calculators</button>
+        <span class="chip" id="frameClient"></span>
+      </div>
+      <iframe id="calcFrame" title="calculator" style="width:100%;height:calc(100vh - 210px);min-height:520px;border:1px solid var(--line);border-radius:4px;background:var(--paper)"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SCHEDULE ================= -->
+<div class="view" id="v-schedule">
+  <div class="wrap">
+    <div class="row" style="align-items:center;justify-content:space-between">
+      <h1 style="font-size:22px;margin:0">Schedule</h1>
+      <button class="btn sm" onclick="App.openJobForm()">+ Job</button>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:10px">
+        <button class="btn sm sec" onclick="Sched.move(-1)">‹</button>
+        <b id="calTitle"></b>
+        <button class="btn sm sec" onclick="Sched.move(1)">›</button>
+      </div>
+      <div class="cal" id="calGrid"></div>
+      <small class="note" style="margin-top:8px">● job &nbsp; <span style="color:var(--warn)">●</span> rain risk flagged</small>
+    </div>
+    <div class="card">
+      <h2 id="dayTitle">Upcoming jobs</h2>
+      <div id="jobList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= COMPLIANCE ================= -->
+<div class="view" id="v-compliance">
+  <div class="wrap">
+    <h1 style="font-size:22px">NSW Compliance</h1>
+    <p class="muted" style="margin-top:-4px">Reference figures built into CADify. Always confirm against the current standard and your local council.</p>
+    <div class="tabbar">
+      <button class="on" data-ctab="pool" onclick="Comp.tab('pool')">Pool fence</button>
+      <button data-ctab="balustrade" onclick="Comp.tab('balustrade')">Balustrade</button>
+      <button data-ctab="shower" onclick="Comp.tab('shower')">Shower screen</button>
+    </div>
+    <div id="compBody"></div>
+  </div>
+</div>
+
+<!-- ================= NAV ================= -->
+<div class="nav" id="nav">
+  <button class="on" data-nav="dash" onclick="App.go('dash')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Home</button>
+  <button data-nav="clients" onclick="App.go('clients')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 6.2a3 3 0 0 1 0 5.6M15.5 20a5.5 5.5 0 0 0-2-4.3"/></svg>Clients</button>
+  <button data-nav="calc" onclick="App.go('calc')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2"/></svg>Calc</button>
+  <button data-nav="schedule" onclick="App.go('schedule')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>Schedule</button>
+  <button data-nav="compliance" onclick="App.go('compliance')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Rules</button>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div class="modal" id="modal"><div class="sheet"><div class="grab"></div><div id="modalBody"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="cadify-bridge.js"></script>
+<script>
+/* =========================================================
+   CADify core — client-folder data layer + app shell
+   ========================================================= */
+/* Data layer — delegates to the CADify bridge (LOCAL now, CLOUD later).
+   Store.data() is a read snapshot of the live account state; all WRITES
+   go through DB.* so the same code works unchanged in cloud mode. */
+const DB = window.CADify;
+const Store = { data:()=>({ clients:DB.clients(), jobs:DB.jobs(), settings:DB.settings(), activity:DB.activity() }) };
+
+const uid = (p='id') => p+'_'+Math.abs(Date.now()^(performance.now()*1000|0)).toString(36)+Math.floor(1e6*Math.random()).toString(36);
+const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate = d => new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+const fmtDay = d => new Date(d).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+const initials = n => (n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
+function logActivity(){ /* activity is written by the bridge on each mutation */ }
+
+/* ---------------- App shell / routing ---------------- */
+const App = {
+  state:{ view:'dash', viewClientId:null, calcClientId:null },
+
+  booted:false,
+  boot(){
+    if(this.booted){ this.refresh(); return; }
+    this.booted=true;
+    if(!DB.clients().length) Seed.demo();
+    this.renderClientPick();
+    this.go('dash');
+    Sched.init();
+    Comp.tab('pool');
+    this.renderCalcMenu();
+    DB.onData(()=>this.refresh());
+  },
+  refresh(){
+    if(!this.booted) return;
+    this.renderClientPick();
+    const v=this.state.view;
+    if(v==='dash')this.renderDash();
+    else if(v==='clients')this.renderClients();
+    else if(v==='folder')this.renderFolder();
+    else if(v==='schedule')Sched.render();
+    else if(v==='calc')this.renderCalcClientNote();
+  },
+
+  go(view){
+    this.state.view=view;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+    const el=document.getElementById('v-'+view); if(el) el.classList.add('on');
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===view));
+    window.scrollTo(0,0);
+    if(view==='dash') this.renderDash();
+    if(view==='clients') this.renderClients();
+    if(view==='schedule') Sched.render();
+    if(view==='calc'){ this.calcHome(); this.renderCalcClientNote(); }
+  },
+
+  activeClient(){ return DB.activeClient(); },
+  setActiveClient(id){ DB.setActiveClient(id); this.renderCalcClientNote(); if(this.state.view==='dash')this.renderDash(); },
+
+  renderClientPick(){
+    const d=Store.data(), sel=document.getElementById('clientPick');
+    if(!d.settings.activeClientId && d.clients[0]){ DB.setActiveClient(d.clients[0].id); }
+    const s=Store.data();
+    sel.innerHTML = s.clients.length
+      ? s.clients.map(c=>`<option value="${c.id}" ${c.id===s.settings.activeClientId?'selected':''}>${esc(c.name)}</option>`).join('')
+      : '<option value="">No clients yet</option>';
+  },
+
+  /* ---- Dashboard ---- */
+  renderDash(){
+    const d=Store.data();
+    const calcs=d.clients.reduce((n,c)=>n+(c.results?.length||0),0);
+    const flags=d.clients.reduce((n,c)=>n+(c.results||[]).filter(r=>r.compliance==='fail').length,0);
+    document.getElementById('sClients').textContent=d.clients.length;
+    document.getElementById('sJobs').textContent=d.jobs.length;
+    document.getElementById('sCalcs').textContent=calcs;
+    document.getElementById('sFlags').textContent=flags;
+    const ac=this.activeClient();
+    document.getElementById('dashHello').textContent = ac? `Active client: ${ac.name}` : 'Create a client to start filing work into folders.';
+
+    // weather watch
+    const risky=d.jobs.filter(j=>j.weather && j.weather.risk);
+    document.getElementById('weatherWatch').innerHTML = risky.length
+      ? risky.map(j=>{const c=d.clients.find(x=>x.id===j.clientId);return `<div class="alert"><b>${esc(j.title)}</b> · ${fmtDay(j.date)}<br><span class="muted">${c?esc(c.name)+' · ':''}${esc(j.weather.label)}</span></div>`;}).join('')
+      : '<p class="muted">No rain risk flagged. Schedule an outdoor job and tap “Check BOM” to see forecasts here.</p>';
+
+    // recent
+    document.getElementById('recent').innerHTML = d.activity.length
+      ? d.activity.slice(0,8).map(a=>`<div class="list-item"><div class="avatar" style="font-size:14px">•</div><div style="flex:1"><div class="sub">${esc(a.text)}</div><div class="sub" style="opacity:.7">${fmtDate(a.at)}</div></div></div>`).join('')
+      : '<p class="muted">Nothing yet.</p>';
+  },
+
+  /* ---- Clients ---- */
+  renderClients(){
+    const d=Store.data(), el=document.getElementById('clientList');
+    if(!d.clients.length){ el.innerHTML=`<div class="empty"><div class="big">📁</div>No clients yet.<br><button class="btn sm" style="margin-top:12px" onclick="App.openClientForm()">+ New client</button></div>`; return; }
+    el.innerHTML=d.clients.map(c=>{
+      const n=(c.results?.length||0), j=d.jobs.filter(x=>x.clientId===c.id).length;
+      return `<div class="list-item" onclick="App.openFolder('${c.id}')">
+        <div class="avatar">${esc(initials(c.name))}</div>
+        <div style="flex:1"><div class="ttl">${esc(c.name)}</div><div class="sub">${esc(c.suburb||c.address||'—')} · ${n} calc${n!==1?'s':''} · ${j} job${j!==1?'s':''}</div></div>
+        <div class="muted">›</div></div>`;
+    }).join('');
+  },
+
+  openFolder(id){ this.state.viewClientId=id; this.go('folder'); this.renderFolder(); },
+  folderTab(t){
+    document.querySelectorAll('[data-ftab]').forEach(b=>b.classList.toggle('on',b.dataset.ftab===t));
+    ['calcs','jobs','compliance'].forEach(x=>document.getElementById('fTab-'+x).classList.toggle('hidden',x!==t));
+  },
+  renderFolder(){
+    const d=Store.data(), c=d.clients.find(x=>x.id===this.state.viewClientId); if(!c)return this.go('clients');
+    document.getElementById('fAvatar').textContent=initials(c.name);
+    document.getElementById('fName').textContent=c.name;
+    document.getElementById('fMeta').textContent=[c.address,c.suburb,c.postcode].filter(Boolean).join(', ')||'No address on file';
+    document.getElementById('fContact').innerHTML=[
+      c.phone?`<span class="chip">📞 ${esc(c.phone)}</span>`:'',
+      c.email?`<span class="chip">✉️ ${esc(c.email)}</span>`:'',
+      c.lat?`<span class="chip">📍 ${c.lat.toFixed(3)}, ${c.lon.toFixed(3)}</span>`:''
+    ].join('')||'<span class="muted">No contact details</span>';
+
+    const rs=(c.results||[]);
+    const js=d.jobs.filter(x=>x.clientId===c.id);
+    const jobName=id=>{ const j=js.find(x=>x.id===id); return j?j.title:'Unassigned'; };
+    const complianceBadge=r=>r.compliance?`<span class="badge ${r.compliance==='pass'?'b-good':r.compliance==='fail'?'b-bad':'b-dim'}">${r.compliance==='pass'?'Compliant':r.compliance==='fail'?'Non-compliant':'—'}</span>`:'';
+    const calcRow=(r,showJob)=>`<div class="list-item"><div class="avatar" style="font-size:18px">${r.icon||'📄'}</div>
+        <div style="flex:1;min-width:0;cursor:pointer" onclick="App.openRun('${r.id}')"><div class="ttl">${esc(r.title)} ${r.sheet?'<span class="badge b-dim">🖼️ PNG</span>':''}</div><div class="sub">${esc(r.module)} · ${fmtDate(r.createdAt)}</div>
+        <div class="sub">${esc(r.summary||'')}</div>${showJob?`<div class="sub" style="margin-top:3px"><span class="badge b-dim">📁 ${esc(jobName(r.jobId))}</span></div>`:''}<div class="sub" style="margin-top:3px;color:#1a1917;font-weight:600">Tap to open &amp; recover →</div></div>
+        ${complianceBadge(r)}
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button class="btn sm sec" onclick="event.stopPropagation();App.assignRecordPicker('${r.id}')">Assign</button>
+          <button class="btn sm danger" onclick="event.stopPropagation();App.delResult('${c.id}','${r.id}')">✕</button></div></div>`;
+
+    // ---- Calculations tab: flat list of everything, each showing its job ----
+    document.getElementById('fCalcs').innerHTML = rs.length
+      ? rs.map(r=>calcRow(r,true)).join('')
+      : '<p class="muted">No calculations filed yet. Open a calculator and use “Save to job”.</p>';
+
+    // ---- Jobs tab: each job is a container of its calculations, plus Unassigned ----
+    const groupCard=(id,title,meta,items,exportable)=>`<div class="card" style="margin-top:10px">
+        <div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="min-width:0"><div class="ttl" style="font-size:15px">${id?'📁 ':'🗂️ '}${esc(title)}</div><div class="sub">${esc(meta)} · ${items.length} item${items.length===1?'':'s'}</div></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+            <button class="btn sm sec" onclick="App.exportJobPdf(${id?`'${id}'`:'null'})" ${items.length?'':'disabled'}>Export job PDF</button>
+            ${id?`<button class="btn sm sec" onclick="App.openJobForm('${id}')">Edit</button>`:''}
+          </div></div>
+        <div style="margin-top:8px">${items.length?items.map(r=>calcRow(r,false)).join(''):'<p class="muted" style="margin:6px 0 0">No calculations in this job yet. Open a calculator and choose this job when you Save.</p>'}</div>
+      </div>`;
+    let jobsHtml = js.map(j=>groupCard(j.id, j.title, `${fmtDay(j.date)} · ${j.type==='outdoor'?'Outdoor':'Indoor'}`, rs.filter(r=>r.jobId===j.id), true)).join('');
+    const unassigned = rs.filter(r=>!r.jobId);
+    if(unassigned.length) jobsHtml += groupCard(null, 'Unassigned', 'not yet assigned to a job', unassigned, true);
+    document.getElementById('fJobs').innerHTML = (js.length||unassigned.length)
+      ? jobsHtml
+      : '<p class="muted">No jobs yet. Add a job, then save calculations into it.</p>';
+
+    // compliance summary for this folder
+    const fails=rs.filter(r=>r.compliance==='fail');
+    document.getElementById('fCompliance').innerHTML =
+      (rs.filter(r=>r.compliance).length===0)
+        ? '<p class="muted">No compliance-checked items yet. The Pool Fence, Balustrade and Shower Screen calculators file a pass/fail here.</p>'
+        : (fails.length
+            ? `<div class="alert"><b>${fails.length} item(s) need attention</b></div>`+fails.map(r=>`<div class="check"><span class="st">❌</span><div><b>${esc(r.title)}</b><br><span class="muted">${esc((r.issues||[]).join('; ')||r.summary)}</span></div></div>`).join('')
+            : '<div class="alert ok"><b>All checked items compliant ✔</b></div>')
+        + `<div class="sep"></div><button class="btn sm sec" onclick="App.go('compliance')">Open NSW rules reference →</button>`;
+
+    this.folderTab('calcs');
+  },
+  delResult(cid,rid){ DB.delResult(cid,rid); this.renderFolder(); toast('Removed'); },
+
+  /* ---- Client form ---- */
+  openClientForm(id){
+    const c = id ? Store.data().clients.find(x=>x.id===id) : {};
+    modal(`<h2>${id?'Edit':'New'} client</h2>
+      <label>Name / business</label><input id="c_name" value="${esc(c.name||'')}">
+      <label>Phone</label><input id="c_phone" value="${esc(c.phone||'')}" inputmode="tel">
+      <label>Email</label><input id="c_email" value="${esc(c.email||'')}" inputmode="email">
+      <label>Site address</label><input id="c_address" value="${esc(c.address||'')}">
+      <div class="grid">
+        <div><label>Suburb</label><input id="c_suburb" value="${esc(c.suburb||'')}"></div>
+        <div><label>Postcode</label><input id="c_postcode" value="${esc(c.postcode||'')}" inputmode="numeric"></div>
+      </div>
+      <small class="note">Suburb/postcode lets CADify pull the Bureau of Meteorology forecast for outdoor jobs.</small>
+      <div class="row" style="margin-top:14px">
+        <button class="btn block" onclick="App.saveClient('${id||''}')">Save</button>
+      </div>
+      ${id?`<button class="btn block danger" style="margin-top:8px" onclick="App.delClient('${id}')">Delete client</button>`:''}`);
+  },
+  saveClient(id){
+    const g=x=>document.getElementById(x).value.trim();
+    const name=g('c_name'); if(!name){ toast('Name required'); return; }
+    const fields={name,phone:g('c_phone'),email:g('c_email'),address:g('c_address'),suburb:g('c_suburb'),postcode:g('c_postcode')};
+    if(id) DB.updateClient(id,fields); else DB.addClient(fields);
+    this.renderClientPick(); closeModal();
+    if(this.state.view==='folder') this.renderFolder(); else this.renderClients();
+    toast('Client saved');
+  },
+  delClient(id){ DB.removeClient(id); this.renderClientPick(); closeModal(); this.go('clients'); toast('Client deleted'); },
+
+  exportClient(id){
+    const d=Store.data(), c=d.clients.find(x=>x.id===id);
+    const payload={client:c, jobs:d.jobs.filter(j=>j.clientId===id), exportedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`CADify-${(c.name||'client').replace(/\W+/g,'_')}.json`; a.click();
+    toast('Folder exported');
+  },
+
+  /* ---- Calculators ---- */
+  // framed calculators = their own self-contained HTML mounted in an iframe
+  framed:{
+    'glass-setout':{icon:'📐',name:'Glass Setout',sub:'Balustrade + pool fencing · panels, gaps, BOM',file:'calculators/glass-setout.html'},
+    'pool-fence':{icon:'🏊',name:'Pool Fence',sub:'AS 1926.1 · panels, gates, compliance check',file:'calculators/pool-fence.html'},
+    'shower-screen':{icon:'🚿',name:'Shower Screen',sub:'AS 1288 · frameless panels, hinges, DXF',file:'calculators/shower-screen.html'},
+  },
+  renderCalcMenu(){
+    const framed=Object.keys(this.framed).map(id=>Object.assign({id,framed:true,live:true},this.framed[id]));
+    const stubs=[
+      {id:'steel-balustrade',icon:'🛡️',name:'Steel Balustrade',sub:'NCC / AS 1170',live:false},
+      {id:'aluminium-balustrade',icon:'🛡️',name:'Aluminium Balustrade',sub:'NCC / AS 1170',live:false},
+      {id:'illustrating',icon:'✏️',name:'Illustrating / Quote',sub:'estimate & illustrate',live:false},
+    ];
+    document.getElementById('calcMenu').innerHTML = framed.concat(stubs).map(m=>
+      `<div class="mod-tile" onclick="App.openCalc('${m.id}')"><div class="ic">${m.icon}</div>
+        <div style="flex:1"><div class="ttl">${m.name}</div><div class="sub">${m.sub}</div></div>
+        ${m.live?'<span class="badge b-good">ready</span>':'<span class="badge b-dim">paste yours</span>'}</div>`).join('');
+  },
+  calcHome(){ document.getElementById('calcMenu').classList.remove('hidden');
+    ['poolfence','stub','frame'].forEach(x=>document.getElementById('calc-'+x).classList.add('hidden'));
+    const f=document.getElementById('calcFrame'); if(f) f.src='about:blank'; },
+  openCalc(id){
+    document.getElementById('calcMenu').classList.add('hidden');
+    if(!this.activeClient()){ toast('Pick or create a client first'); this.calcHome(); this.go('clients'); return; }
+    if(this.framed[id]){
+      const box=document.getElementById('calc-frame');
+      document.getElementById('frameClient').textContent='Folder: '+(this.activeClient().name||'');
+      document.getElementById('calcFrame').src=this.framed[id].file;
+      box.classList.remove('hidden');
+    } else if(id==='poolfence'){ document.getElementById('calc-poolfence').classList.remove('hidden'); }
+    else{
+      const names={shower:'Shower Screen','steel-balustrade':'Steel Balustrade','aluminium-balustrade':'Aluminium Balustrade',illustrating:'Illustrating / Quote'};
+      document.getElementById('stubTitle').textContent=names[id]+' Calculator';
+      document.getElementById('stubName').textContent=names[id];
+      document.getElementById('calc-stub').dataset.module=names[id];
+      document.getElementById('calc-stub').classList.remove('hidden');
+    }
+    this.renderCalcClientNote();
+  },
+  renderCalcClientNote(){ const ac=this.activeClient();
+    document.getElementById('calcClientNote').innerHTML = ac?`Filing into folder: <b>${esc(ac.name)}</b>`:'⚠️ No active client — pick one up top.'; },
+
+  /* ---- Jobs ---- */
+  jobRow(j){
+    const d=Store.data(), c=d.clients.find(x=>x.id===j.clientId);
+    const w = j.weather ? `<span class="badge ${j.weather.risk?'b-warn':'b-good'}">${esc(j.weather.label)}</span>` : (j.type==='outdoor'?'<span class="badge b-dim">weather ?</span>':'');
+    return `<div class="list-item">
+      <div class="avatar" style="font-size:18px">${j.type==='outdoor'?'🌤️':'🏠'}</div>
+      <div style="flex:1" onclick="App.openJobForm('${j.id}')"><div class="ttl">${esc(j.title)}</div>
+        <div class="sub">${fmtDay(j.date)}${c?' · '+esc(c.name):''}${j.location?' · '+esc(j.location):''}</div></div>
+      ${w}
+      ${j.type==='outdoor'?`<button class="btn sm sec" onclick="Weather.check('${j.id}')">Check BOM</button>`:''}
+    </div>`;
+  },
+  openJobForm(id, presetClient){
+    const d=Store.data(), j = id ? d.jobs.find(x=>x.id===id) : {type:'outdoor', date:new Date().toISOString().slice(0,10)};
+    const cid = j.clientId || presetClient || this.activeClient()?.id || d.clients[0]?.id;
+    modal(`<h2>${id?'Edit':'New'} job</h2>
+      <label>Job title</label><input id="j_title" value="${esc(j.title||'')}" placeholder="e.g. Pool fence install">
+      <label>Client</label><select id="j_client">${d.clients.map(c=>`<option value="${c.id}" ${c.id===cid?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
+      <div class="grid">
+        <div><label>Date</label><input type="date" id="j_date" value="${(j.date||'').slice(0,10)}"></div>
+        <div><label>Type</label><select id="j_type"><option value="outdoor" ${j.type==='outdoor'?'selected':''}>Outdoor</option><option value="indoor" ${j.type==='indoor'?'selected':''}>Indoor</option></select></div>
+      </div>
+      <label>Location / notes</label><input id="j_location" value="${esc(j.location||'')}" placeholder="site suburb or note">
+      <div class="row" style="margin-top:14px"><button class="btn block" onclick="App.saveJob('${id||''}')">Save job</button></div>
+      ${id?`<button class="btn block danger" style="margin-top:8px" onclick="App.delJob('${id}')">Delete job</button>`:''}`);
+  },
+  saveJob(id){
+    const g=x=>document.getElementById(x).value;
+    const title=g('j_title').trim(); if(!title){toast('Title required');return;}
+    const fields={title,clientId:g('j_client'),date:g('j_date'),type:g('j_type'),location:g('j_location').trim()};
+    if(id) DB.updateJob(id,fields); else DB.addJob(fields);
+    closeModal(); Sched.render(); if(this.state.view==='folder')this.renderFolder();
+    toast('Job saved');
+  },
+  delJob(id){ DB.removeJob(id); closeModal(); Sched.render(); if(this.state.view==='folder')this.renderFolder(); toast('Job deleted'); },
+
+  /* ---- Assign a calculation to a job (called from folder or from a calculator) ---- */
+  _clientOfResult(rid){ return Store.data().clients.find(c=>(c.results||[]).some(r=>r.id===rid)); },
+  assignRecordPicker(rid, _tries){
+    const c=this._clientOfResult(rid);
+    if(!c){ if((_tries||0)<8){ setTimeout(()=>App.assignRecordPicker(rid,(_tries||0)+1),120); return; } toast('Calculation not found'); return; }
+    const r=(c.results||[]).find(x=>x.id===rid);
+    const jobs=Store.data().jobs.filter(j=>j.clientId===c.id);
+    const opts = jobs.map(j=>`<button class="btn sec block" style="margin-top:6px;text-align:left" onclick="App.assignResult('${rid}','${j.id}')">📁 ${esc(j.title)} <span class="muted">· ${fmtDay(j.date)}</span>${r.jobId===j.id?' ✓':''}</button>`).join('');
+    modal(`<h2>Save to job</h2>
+      <p class="muted" style="margin-top:-4px">${esc(r.title)} — ${esc(r.module)}</p>
+      <div style="max-height:46vh;overflow:auto">${opts||'<p class="muted">No jobs for this client yet.</p>'}
+        <button class="btn sec block" style="margin-top:6px;text-align:left" onclick="App.assignResult('${rid}',null)">🗂️ Unassigned${!r.jobId?' ✓':''}</button>
+      </div>
+      <button class="btn block" style="margin-top:12px" onclick="App.newJobForResult('${rid}','${c.id}')">＋ New job…</button>`);
+  },
+  assignResult(rid, jobId){
+    const c=this._clientOfResult(rid); if(!c) return;
+    DB.assignResult(c.id, rid, jobId);
+    closeModal();
+    if(this.state.view==='folder'){ this.state.viewClientId=c.id; this.renderFolder(); }
+    toast(jobId?'Saved to job':'Moved to Unassigned');
+  },
+  newJobForResult(rid, cid){
+    const today=new Date().toISOString().slice(0,10);
+    modal(`<h2>New job</h2>
+      <label>Job title</label><input id="nj_title" placeholder="e.g. Bella Trading — shopfront" autofocus>
+      <div class="grid"><div><label>Date</label><input type="date" id="nj_date" value="${today}"></div>
+        <div><label>Type</label><select id="nj_type"><option value="outdoor">Outdoor</option><option value="indoor" selected>Indoor</option></select></div></div>
+      <label>Location / notes</label><input id="nj_location" placeholder="site suburb or note">
+      <div class="row" style="margin-top:14px"><button class="btn block" onclick="App._createJobAssign('${rid}','${cid}')">Create &amp; save calculation into it</button></div>`);
+  },
+  _createJobAssign(rid, cid){
+    const g=x=>document.getElementById(x).value;
+    const title=g('nj_title').trim(); if(!title){ toast('Title required'); return; }
+    const jid=DB.addJob({clientId:cid,title,date:g('nj_date'),type:g('nj_type'),location:g('nj_location').trim()});
+    DB.assignResult(cid, rid, jid);
+    closeModal(); Sched.render();
+    if(this.state.view==='folder'){ this.state.viewClientId=cid; this.renderFolder(); }
+    toast('Job created — calculation saved into it');
+  },
+
+  /* ---- Open a saved run: view its data + drawing, recover the PNG ---- */
+  openRun(rid){
+    const c=this._clientOfResult(rid); if(!c){ toast('Run not found'); return; }
+    const r=(c.results||[]).find(x=>x.id===rid); if(!r){ toast('Run not found'); return; }
+    const d=r.data||{};
+    const rows=[];
+    const add=(k,v)=>{ if(v!==undefined&&v!==null&&v!=='') rows.push([k,v]); };
+    add('Module', r.module); add('Saved', fmtDate(r.createdAt));
+    if(d.run!=null) add('Run length', d.run+' mm');
+    if(d.X!=null) add('X measurement', d.X+' mm'); if(d.Y!=null) add('Y measurement', d.Y+' mm');
+    if(d.height!=null) add('Height', d.height+' mm'); if(d.glassHeight!=null) add('Glass height', d.glassHeight+' mm');
+    if(d.doorWidth!=null) add('Door width', d.doorWidth+' mm');
+    if(d.gap!=null) add('Gap', d.gap+' mm');
+    if(d.startGap!=null||d.endGap!=null) add('Start / end gap', (d.startGap||0)+' / '+(d.endGap||0)+' mm');
+    if(d.finish) add('Finish', d.finish); if(d.fixing) add('Fixing', d.fixing);
+    if(d.glass) add('Glass', d.glass+(d.thickness?(' · '+d.thickness+' mm'):''));
+    if(Array.isArray(d.panels)) add('Panels', d.panels.map(p=>typeof p==='object'?`${p.id} ${p.bottom}${p.top&&p.top!==p.bottom?'/'+p.top:''}×${p.height}`:p).join('   '));
+    if(Array.isArray(d.gaps)) add('Gaps', d.gaps.join(', ')+' mm');
+    const compBadge=r.compliance?`<span class="badge ${r.compliance==='pass'?'b-good':r.compliance==='fail'?'b-bad':'b-dim'}">${r.compliance==='pass'?'Compliant':r.compliance==='fail'?'Non-compliant':'—'}</span>`:'';
+    const kv=rows.map(([k,v])=>`<div class="kv" style="display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--line)"><span class="muted" style="flex:0 0 42%">${esc(k)}</span><b style="text-align:right;font-family:monospace">${esc(String(v))}</b></div>`).join('');
+    const img=r.sheet
+      ? `<img src="${r.sheet}" alt="set-out drawing" style="width:100%;border:1px solid var(--line);border-radius:3px;background:#fff;margin:10px 0">
+         <button class="btn block" onclick="App.downloadRunPng('${rid}')">⬇ Download drawing (PNG)</button>`
+      : `<div class="alert" style="margin:10px 0">No drawing was stored with this run (older save). The numbers below are still recoverable — export them as data.</div>`;
+    modal(`<h2 style="margin-bottom:2px">${esc(r.title)} ${compBadge}</h2>
+      <div class="muted" style="margin-bottom:8px">${esc(r.summary||'')}</div>
+      ${img}
+      <div style="max-height:38vh;overflow:auto;margin-top:6px">${kv||'<p class="muted">No stored data.</p>'}</div>
+      ${(r.issues&&r.issues.length)?`<div class="alert" style="margin-top:10px"><b>Compliance notes:</b><br>${r.issues.map(esc).join('<br>')}</div>`:''}
+      <div class="row" style="margin-top:12px;gap:8px">
+        <button class="btn sec" style="flex:1" onclick="App.downloadRunJson('${rid}')">⬇ Data (JSON)</button>
+        <button class="btn sec" style="flex:1" onclick="App.assignRecordPicker('${rid}')">Move to job</button>
+      </div>`);
+  },
+  downloadRunPng(rid){
+    const c=this._clientOfResult(rid); const r=c&&(c.results||[]).find(x=>x.id===rid);
+    if(!r||!r.sheet){ toast('No drawing stored'); return; }
+    const ext=/^data:image\/png/.test(r.sheet)?'png':'jpg';
+    const a=document.createElement('a'); a.href=r.sheet;
+    a.download=`CADify-${(r.title||'run').replace(/\W+/g,'_')}.${ext}`; a.click();
+    toast('Drawing downloaded');
+  },
+  downloadRunJson(rid){
+    const c=this._clientOfResult(rid); const r=c&&(c.results||[]).find(x=>x.id===rid);
+    if(!r){ return; }
+    const payload={client:c.name, module:r.module, title:r.title, savedAt:new Date(r.createdAt).toISOString(),
+      summary:r.summary, compliance:r.compliance||null, issues:r.issues||[], data:r.data||{}};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`CADify-${(r.title||'run').replace(/\W+/g,'_')}.json`; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast('Data downloaded');
+  },
+
+  /* ---- Export a whole job (or the Unassigned bucket) as one combined PDF ---- */
+  async exportJobPdf(jobId){
+    const d=Store.data();
+    const job = jobId ? d.jobs.find(j=>j.id===jobId) : null;
+    const cid = job ? job.clientId : this.state.viewClientId;
+    const c = d.clients.find(x=>x.id===cid); if(!c){ toast('Client not found'); return; }
+    const calcs = (c.results||[]).filter(r=>(r.jobId||null)===(jobId||null));
+    if(!calcs.length){ toast('Nothing to export in this job'); return; }
+    toast('Building job PDF…');
+    try{
+      const blob = await cadBuildJobPdf(c, job, calcs);
+      const name = `CADify-${(c.name||'client').replace(/\W+/g,'_')}-${((job&&job.title)||'Unassigned').replace(/\W+/g,'_')}.pdf`;
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+      toast('Job PDF downloaded');
+    }catch(e){ console.error(e); toast('PDF failed: '+e.message); }
+  },
+
+  /* file a calculator result into the active client folder (via the bridge) */
+  fileResult(res){
+    const r=DB.file(res);
+    if(!r) toast('No active client');
+    return r;
+  },
+};
+/* expose App so calculators mounted in the iframe can call back (window.parent.App) */
+window.App = App;
+
+/* ============================================================
+   Combined Job PDF builder (no dependencies): renders a cover +
+   each calculation (summary + its saved set-out drawing) into one PDF.
+   ============================================================ */
+function cadEsc(s){ return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function cadWrapText(s, max){ // naive word-wrap into lines of <= max chars
+  const words=String(s||'').split(/\s+/), lines=[]; let cur='';
+  words.forEach(w=>{ if((cur+' '+w).trim().length>max){ if(cur)lines.push(cur); cur=w; } else cur=(cur?cur+' ':'')+w; });
+  if(cur)lines.push(cur); return lines;
+}
+function cadCoverSvg(client, job, calcs){
+  const W=794,H=1123; // A4 @ ~96dpi
+  const A=[]; A.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="Helvetica, Arial, sans-serif"><rect width="${W}" height="${H}" fill="#ffffff"/>`);
+  A.push(`<rect x="0" y="0" width="${W}" height="120" fill="#0B0B0B"/>`);
+  A.push(`<text x="48" y="66" font-size="34" font-weight="bold" fill="#ffffff">CADify</text>`);
+  A.push(`<text x="48" y="96" font-size="12" letter-spacing="3" fill="#C6C2B9">ON-SITE SHOP DRAWINGS · JOB SHEET</text>`);
+  let y=180;
+  A.push(`<text x="48" y="${y}" font-size="13" fill="#54524B">CLIENT</text>`); y+=28;
+  A.push(`<text x="48" y="${y}" font-size="24" font-weight="bold" fill="#0B0B0B">${cadEsc(client.name||'Client')}</text>`); y+=26;
+  const addr=[client.address,client.suburb,client.postcode].filter(Boolean).join(', ');
+  if(addr){ A.push(`<text x="48" y="${y}" font-size="14" fill="#54524B">${cadEsc(addr)}</text>`); y+=22; }
+  const contact=[client.phone,client.email].filter(Boolean).join('  ·  ');
+  if(contact){ A.push(`<text x="48" y="${y}" font-size="13" fill="#54524B">${cadEsc(contact)}</text>`); y+=22; }
+  y+=18;
+  A.push(`<line x1="48" y1="${y}" x2="${W-48}" y2="${y}" stroke="#C6C2B9"/>`); y+=32;
+  A.push(`<text x="48" y="${y}" font-size="13" fill="#54524B">JOB</text>`); y+=28;
+  A.push(`<text x="48" y="${y}" font-size="22" font-weight="bold" fill="#0B0B0B">${cadEsc(job?job.title:'Unassigned calculations')}</text>`); y+=24;
+  if(job){ A.push(`<text x="48" y="${y}" font-size="14" fill="#54524B">${cadEsc((job.date||'')+(job.type?('  ·  '+(job.type==='outdoor'?'Outdoor':'Indoor')):'')+(job.location?('  ·  '+job.location):''))}</text>`); y+=22; }
+  y+=20;
+  A.push(`<text x="48" y="${y}" font-size="15" font-weight="bold" fill="#0B0B0B">Contents — ${calcs.length} calculation${calcs.length===1?'':'s'}</text>`); y+=10;
+  calcs.forEach((r,i)=>{ y+=26; A.push(`<text x="48" y="${y}" font-size="14" fill="#0B0B0B">${i+1}.  ${cadEsc((r.module||'Calc'))} — ${cadEsc(r.title||'')}</text>`);
+    if(r.summary){ y+=18; A.push(`<text x="70" y="${y}" font-size="12" fill="#54524B">${cadEsc(r.summary)}</text>`);}
+    if(r.compliance){ const t=r.compliance==='pass'?'Compliant':r.compliance==='fail'?'NON-COMPLIANT':'—'; const col=r.compliance==='fail'?'#A32017':'#2C5A38'; y+=16; A.push(`<text x="70" y="${y}" font-size="12" fill="${col}">${t}</text>`);} });
+  A.push(`<text x="48" y="${H-40}" font-size="11" fill="#8A877F">Generated with CADify · ${new Date().toLocaleDateString('en-AU')} · All dimensions in millimetres. Confirm site dimensions before fabrication.</text>`);
+  A.push(`</svg>`); return A.join('');
+}
+function cadSummarySvg(r, idx){
+  const W=794,H=1123, A=[];
+  A.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="Helvetica, Arial, sans-serif"><rect width="${W}" height="${H}" fill="#ffffff"/>`);
+  A.push(`<rect x="0" y="0" width="${W}" height="70" fill="#F4F2ED"/><line x1="0" y1="70" x2="${W}" y2="70" stroke="#0B0B0B"/>`);
+  A.push(`<text x="48" y="44" font-size="18" font-weight="bold" fill="#0B0B0B">${idx}. ${cadEsc(r.module||'Calculation')} — ${cadEsc(r.title||'')}</text>`);
+  let y=120; A.push(`<text x="48" y="${y}" font-size="13" fill="#54524B">${cadEsc(fmtDate(r.createdAt))}</text>`); y+=34;
+  cadWrapText(r.summary||'', 88).forEach(l=>{ A.push(`<text x="48" y="${y}" font-size="15" fill="#0B0B0B">${cadEsc(l)}</text>`); y+=24; });
+  const data=r.data||{};
+  const rows=[];
+  if(data.configName||data.config) rows.push(['Configuration', data.configName||data.config]);
+  if(data.X!=null) rows.push(['X measurement', data.X+' mm']);
+  if(data.Y!=null) rows.push(['Y measurement', data.Y+' mm']);
+  if(data.height!=null) rows.push(['Overall height', data.height+' mm']);
+  if(data.doorWidth!=null) rows.push(['Door width', data.doorWidth+' mm']);
+  if(data.glass) rows.push(['Glass', data.glass+(data.thickness?(' · '+data.thickness+' mm'):'')]);
+  if(data.finish) rows.push(['Hardware finish', data.finish]);
+  if(Array.isArray(data.panels)) rows.push(['Panels', data.panels.map(p=>`${p.id} ${p.bottom}${p.top&&p.top!==p.bottom?'/'+p.top:''}×${p.height}`).join('   ')]);
+  if(rows.length){ y+=14; A.push(`<line x1="48" y1="${y}" x2="${W-48}" y2="${y}" stroke="#DEDAD2"/>`); y+=8;
+    rows.forEach(([k,v])=>{ y+=26; A.push(`<text x="48" y="${y}" font-size="13" fill="#54524B">${cadEsc(k)}</text><text x="240" y="${y}" font-size="13" fill="#0B0B0B" font-family="monospace">${cadEsc(v)}</text>`); }); }
+  if(!r.sheet){ y+=40; A.push(`<text x="48" y="${y}" font-size="12" fill="#8A877F">Drawing not stored with this calculation — open the calculator to regenerate the full sheet.</text>`); }
+  A.push(`</svg>`); return A.join('');
+}
+function cadSvgRaster(svg, scale, mime, q){
+  return new Promise((resolve,reject)=>{
+    const m=svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/); const w=m?+m[1]:794,h=m?+m[2]:1123;
+    const s=Math.min(scale, 3000/Math.max(w,h));
+    const img=new Image();
+    img.onload=()=>{ try{ const cv=document.createElement('canvas'); cv.width=Math.round(w*s); cv.height=Math.round(h*s);
+      const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height); ctx.drawImage(img,0,0,cv.width,cv.height);
+      resolve({dataUrl:cv.toDataURL(mime,q), width:cv.width, height:cv.height}); }catch(e){ reject(e); } };
+    img.onerror=()=>reject(new Error('render failed'));
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  });
+}
+function cadImgPage(dataUrl, header){ // draw a saved drawing image with a header strip
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{ try{
+      const iw=img.naturalWidth||794, ih=img.naturalHeight||600, top=64;
+      const cv=document.createElement('canvas'); cv.width=iw; cv.height=ih+top;
+      const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+      ctx.fillStyle='#F4F2ED'; ctx.fillRect(0,0,cv.width,top); ctx.fillStyle='#0B0B0B'; ctx.fillRect(0,top-2,cv.width,2);
+      ctx.fillStyle='#0B0B0B'; ctx.font='bold 22px Helvetica, Arial, sans-serif'; ctx.fillText(header||'', 20, 40);
+      ctx.drawImage(img,0,top,iw,ih);
+      const du=cv.toDataURL('image/jpeg',0.85); resolve({bytes:cadBytesFromDataUrl(du), w:cv.width, h:cv.height});
+    }catch(e){ reject(e); } };
+    img.onerror=()=>reject(new Error('image page failed'));
+    img.src=dataUrl;
+  });
+}
+function cadBytesFromDataUrl(du){ const bin=atob(du.split(',')[1]); const a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return a; }
+function cadBuildPdf(images){
+  const enc=t=>{ const a=new Uint8Array(t.length); for(let i=0;i<t.length;i++)a[i]=t.charCodeAt(i)&0xff; return a; };
+  const parts=[], off=[]; let len=0;
+  const push=u8=>{ parts.push(u8); len+=u8.length; }; const put=t=>push(enc(t));
+  put('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const kids=images.map((_,i)=>(3+i*3)+' 0 R').join(' ');
+  off[1]=len; put('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  off[2]=len; put('2 0 obj\n<< /Type /Pages /Kids ['+kids+'] /Count '+images.length+' >>\nendobj\n');
+  images.forEach((im,i)=>{ const pageN=3+i*3, imgN=pageN+1, cN=pageN+2;
+    const scale=0.75, PW=(im.w*scale), PH=(im.h*scale);
+    off[pageN]=len; put(pageN+' 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW.toFixed(2)+' '+PH.toFixed(2)+'] /Resources << /XObject << /Im0 '+imgN+' 0 R >> >> /Contents '+cN+' 0 R >>\nendobj\n');
+    off[imgN]=len; put(imgN+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+im.w+' /Height '+im.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+im.bytes.length+' >>\nstream\n'); push(im.bytes); put('\nendstream\nendobj\n');
+    const content='q\n'+PW.toFixed(2)+' 0 0 '+PH.toFixed(2)+' 0 0 cm\n/Im0 Do\nQ\n';
+    off[cN]=len; put(cN+' 0 obj\n<< /Length '+content.length+' >>\nstream\n'+content+'endstream\nendobj\n'); });
+  const n=3+images.length*3, xref=len; let x='xref\n0 '+n+'\n0000000000 65535 f \n';
+  for(let i=1;i<n;i++) x+=('0000000000'+off[i]).slice(-10)+' 00000 n \n';
+  x+='trailer\n<< /Size '+n+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n'; put(x);
+  return new Blob(parts,{type:'application/pdf'});
+}
+async function cadBuildJobPdf(client, job, calcs){
+  const pages=[];
+  const cover=await cadSvgRaster(cadCoverSvg(client, job, calcs), 2, 'image/jpeg', 0.9);
+  pages.push({bytes:cadBytesFromDataUrl(cover.dataUrl), w:cover.width, h:cover.height});
+  for(let i=0;i<calcs.length;i++){ const r=calcs[i];
+    const sum=await cadSvgRaster(cadSummarySvg(r,i+1), 2, 'image/jpeg', 0.9);
+    pages.push({bytes:cadBytesFromDataUrl(sum.dataUrl), w:sum.width, h:sum.height});
+    if(r.sheet){ try{ pages.push(await cadImgPage(r.sheet, `${i+1}. ${r.module||''} — ${r.title||''}`)); }catch(e){} }
+  }
+  return cadBuildPdf(pages);
+}
+
+/* ---------------- Calculators ---------------- */
+const Calc = {
+  poolFence(){
+    const num=id=>parseFloat(document.getElementById(id).value)||0;
+    const chk=id=>document.getElementById(id).checked;
+    const height=num('pf_height'), gapUnder=num('pf_gapunder'), barGap=num('pf_bargap'), latch=num('pf_latch');
+    const boundary=document.getElementById('pf_boundary').value;
+    const minH = boundary==='boundary'?1800:1200;
+    const checks=[
+      {label:`Barrier height ≥ ${minH}mm`, ok:height>=minH, got:`${height}mm`},
+      {label:'Gap under fence ≤ 100mm', ok:gapUnder<=100, got:`${gapUnder}mm`},
+      {label:'Vertical bar gap ≤ 100mm', ok:barGap<=100, got:`${barGap}mm`},
+      {label:'Latch height ≥ 1500mm', ok:latch>=1500, got:`${latch}mm`},
+      {label:'Gate self-closing', ok:chk('pf_selfclose')},
+      {label:'Gate self-latching', ok:chk('pf_selflatch')},
+      {label:'Gate opens away from pool', ok:chk('pf_opensaway')},
+      {label:'900mm non-climbable zone clear', ok:chk('pf_ncz')},
+      {label:'CPR sign present & readable', ok:chk('pf_cpr')},
+    ];
+    const issues=checks.filter(c=>!c.ok).map(c=>c.label);
+    const pass=issues.length===0;
+    document.getElementById('pf_result').innerHTML =
+      `<div class="alert ${pass?'ok':''}"><b>${pass?'✔ Compliant with NSW / AS 1926.1 (as entered)':'❌ '+issues.length+' issue(s) to fix'}</b></div>`+
+      checks.map(c=>`<div class="check"><span class="st">${c.ok?'✅':'❌'}</span><div>${esc(c.label)}${c.got?` <span class="muted">(${esc(c.got)})</span>`:''}</div></div>`).join('')+
+      `<small class="note" style="margin-top:8px">Reference only — verify against AS 1926.1 &amp; your council. </small>`;
+    const r=App.fileResult({
+      module:'Pool Fence', icon:'🏊',
+      title:`Pool fence check — ${boundary==='boundary'?'boundary barrier':'pool fence'}`,
+      summary:`H ${height}mm · under ${gapUnder}mm · bars ${barGap}mm`,
+      compliance: pass?'pass':'fail', issues,
+      data:{height,gapUnder,barGap,latch,boundary}
+    });
+    if(r) toast(pass?'Filed — compliant ✔':'Filed — flagged for review');
+  },
+  stubSave(){
+    const title=document.getElementById('stub_title').value.trim()||'Untitled result';
+    const summary=document.getElementById('stub_summary').value.trim();
+    const module=document.getElementById('calc-stub').dataset.module||'Calculator';
+    const r=App.fileResult({module,icon:'📄',title,summary});
+    if(r){ document.getElementById('stub_result').innerHTML='<div class="alert ok">Saved to folder ✔</div>';
+      document.getElementById('stub_title').value=''; document.getElementById('stub_summary').value=''; }
+  },
+};
+
+/* ---------------- Scheduler / calendar ---------------- */
+const Sched = {
+  cur:null,
+  init(){ const n=new Date(); this.cur=new Date(n.getFullYear(),n.getMonth(),1); },
+  move(d){ this.cur.setMonth(this.cur.getMonth()+d); this.render(); },
+  render(){
+    const d=Store.data(), y=this.cur.getFullYear(), m=this.cur.getMonth();
+    document.getElementById('calTitle').textContent=this.cur.toLocaleDateString('en-AU',{month:'long',year:'numeric'});
+    const first=new Date(y,m,1), start=new Date(first); start.setDate(1-((first.getDay()+6)%7)); // Monday start
+    const today=new Date().toISOString().slice(0,10);
+    const jobsBy={}; d.jobs.forEach(j=>{ (jobsBy[j.date]=jobsBy[j.date]||[]).push(j); });
+    let html='<div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div><div class="dow">Sun</div>';
+    for(let i=0;i<42;i++){
+      const day=new Date(start); day.setDate(start.getDate()+i);
+      const iso=day.toISOString().slice(0,10); const out=day.getMonth()!==m;
+      const jl=jobsBy[iso]||[];
+      const dots=jl.slice(0,4).map(j=>`<span class="dot ${j.weather&&j.weather.risk?'rain':''}"></span>`).join('');
+      html+=`<div class="day ${out?'out':''} ${iso===today?'today':''}" onclick="Sched.day('${iso}')"><div>${day.getDate()}</div><div class="dots">${dots}</div></div>`;
+    }
+    document.getElementById('calGrid').innerHTML=html;
+    this.day(null);
+  },
+  day(iso){
+    const d=Store.data();
+    let jobs, title;
+    if(iso){ jobs=d.jobs.filter(j=>j.date===iso); title=fmtDay(iso); }
+    else { const t=new Date().toISOString().slice(0,10); jobs=d.jobs.filter(j=>j.date>=t).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,12); title='Upcoming jobs'; }
+    document.getElementById('dayTitle').textContent=title;
+    document.getElementById('jobList').innerHTML = jobs.length? jobs.map(j=>App.jobRow(j)).join('')
+      : `<p class="muted">No jobs.${iso?` <a href="#" onclick="App.openJobForm(null);return false">Add one</a>`:''}</p>`;
+  },
+};
+
+/* ---------------- Weather (Bureau of Meteorology) ---------------- */
+const Weather = {
+  async check(jobId){
+    const d=Store.data(), j=d.jobs.find(x=>x.id===jobId); if(!j)return;
+    const c=d.clients.find(x=>x.id===j.clientId);
+    toast('Contacting Bureau of Meteorology…');
+    let fc=null;
+    try{ fc = await this.forecastFor(c, j.date); }catch(e){ fc=null; }
+    if(!fc){ fc=this.demoForecast(j.date); fc.demo=true; }
+    const risk = fc.chance>=50 || fc.rainMax>=1;
+    const weather={ risk, chance:fc.chance, rainMax:fc.rainMax,
+      label:`${fc.chance}% rain${fc.rainMax?` · ${fc.rainMax}mm`:''}${fc.demo?' (demo)':''}`, checkedAt:Date.now(),
+      source: fc.demo?'demo':'BOM' };
+    j.weather=weather; DB.updateJob(j.id,{weather});
+    Sched.render(); if(App.state.view==='folder')App.renderFolder(); if(App.state.view==='dash')App.renderDash();
+    modal(`<h2>⛅ Forecast — ${esc(j.title)}</h2>
+      <div class="sub">${fmtDay(j.date)}${c?' · '+esc(c.name):''}</div>
+      <div class="card" style="margin-top:12px;background:var(--panel2)">
+        <div class="kv"><span class="k">Chance of rain</span><b>${fc.chance}%</b></div>
+        <div class="kv"><span class="k">Rain amount</span><b>${fc.rainMin}–${fc.rainMax} mm</b></div>
+        <div class="kv"><span class="k">Assessment</span><b class="${risk?'':'muted'}" style="${risk?'color:var(--warn)':''}">${risk?'⚠️ Rain risk — outdoor job':'✔ Looks clear'}</b></div>
+        <div class="kv"><span class="k">Source</span><span class="muted">${fc.demo?'Demo data (BOM not reachable)':'api.weather.bom.gov.au'}</span></div>
+      </div>
+      ${fc.demo?'<small class="note">The live BOM endpoint can be blocked by browser CORS or offline environments. When hosted on your own domain (or via a small proxy) CADify pulls the real forecast. Demo values shown so you can see the flow.</small>':''}
+      <button class="btn block" style="margin-top:12px" onclick="closeModal()">Done</button>`);
+  },
+  async forecastFor(client, dateISO){
+    // 1) resolve geohash
+    let geohash=client && client.geohash;
+    if(!geohash){
+      let q = client && (client.postcode || client.suburb);
+      if(client && client.lat) q = `${client.lat},${client.lon}`;
+      if(!q) return null;
+      const loc = await this.fetchJSON(`https://api.weather.bom.gov.au/v1/locations?search=${encodeURIComponent(q)}`);
+      geohash = loc && loc.data && loc.data[0] && (loc.data[0].geohash||'').slice(0,6);
+      if(geohash && client){ client.geohash=geohash; DB.updateClient(client.id,{geohash}); }
+    }
+    if(!geohash) return null;
+    // 2) daily forecast
+    const daily = await this.fetchJSON(`https://api.weather.bom.gov.au/v1/locations/${geohash}/forecasts/daily`);
+    const days = (daily && daily.data)||[];
+    const hit = days.find(d=> (d.date||'').slice(0,10)===dateISO) || days[0];
+    if(!hit) return null;
+    const rain=hit.rain||{}; const amt=rain.amount||{};
+    return { chance:rain.chance||0, rainMin:amt.min||0, rainMax:amt.max||0 };
+  },
+  async fetchJSON(url){
+    const tries=[ url,
+      'https://corsproxy.io/?url='+encodeURIComponent(url),
+      'https://api.allorigins.win/raw?url='+encodeURIComponent(url) ];
+    for(const u of tries){
+      try{ const r=await fetch(u,{headers:{'Accept':'application/json'}}); if(r.ok) return await r.json(); }catch(e){}
+    }
+    return null;
+  },
+  demoForecast(dateISO){
+    const seed=[...dateISO].reduce((a,c)=>a+c.charCodeAt(0),0);
+    const chance=(seed*37)%100; const rainMax = chance>50 ? Math.round((chance-40)/8) : 0;
+    return {chance, rainMin:rainMax?Math.max(0,rainMax-2):0, rainMax};
+  },
+};
+
+/* ---------------- NSW compliance reference ---------------- */
+const Comp = {
+  data:{
+    pool:{ title:'Pool fence — NSW (Swimming Pools Act 1992 / AS 1926.1)',
+      rules:[
+        ['Barrier height','≥ 1200 mm measured from the finished ground on the outside'],
+        ['Gap under barrier','≤ 100 mm to the ground'],
+        ['Vertical bar gaps','≤ 100 mm between verticals'],
+        ['Horizontal climbable members','≥ 900 mm apart (or on the pool side) — otherwise treated as a ladder'],
+        ['Non-climbable zone (NCZ)','900 mm arc clear of climbable objects (pots, BBQs, furniture, trees)'],
+        ['Boundary fence as barrier','≥ 1800 mm high'],
+        ['Gate','Self-closing from any position, self-latching, opens away from the pool'],
+        ['Latch height','≥ 1500 mm above ground (or shielded release)'],
+        ['CPR sign','Current, legible resuscitation sign near the pool'],
+        ['Registration','Pool registered on the NSW Swimming Pool Register; valid Certificate of Compliance for sale/lease'],
+      ]},
+    balustrade:{ title:'Balustrade — NCC / AS 1170.1 (glass: AS 1288)',
+      rules:[
+        ['When required','Any accessible surface with a fall > 1 m (1000 mm)'],
+        ['Minimum height','≥ 1000 mm above floor (balconies/decks); ≥ 865 mm to stair/ramp nosings'],
+        ['Openings','≤ 125 mm gap — a 125 mm sphere must not pass through'],
+        ['Non-climbable (falls > 4 m)','No climbable horizontal elements between 150 mm and 760 mm below the handrail'],
+        ['Loadings','Handrail/barrier design to AS 1170.1 (e.g. 0.75 kN/m for domestic top rail)'],
+        ['Glass','Grade A safety glass (toughened/laminated) to AS 1288; interlinking/handrail for frameless where required'],
+      ]},
+    shower:{ title:'Shower screen — AS 1288 (safety glazing)',
+      rules:[
+        ['Glass type','Grade A safety glass — toughened or laminated — required for all shower/bath enclosures'],
+        ['Marking','Each pane permanently marked with standard, thickness & manufacturer'],
+        ['Framed panels','Typically 5–6 mm toughened in framed screens'],
+        ['Frameless / semi-frameless','Generally ≥ 10 mm toughened; door hung on suitable hinges/fixings'],
+        ['Human impact','Glazing in doors/side panels must meet AS 1288 human-impact requirements'],
+        ['Door swing','Should open outward (or in/out) so an occupant is not trapped'],
+      ]},
+  },
+  tab(t){
+    document.querySelectorAll('[data-ctab]').forEach(b=>b.classList.toggle('on',b.dataset.ctab===t));
+    const s=this.data[t];
+    document.getElementById('compBody').innerHTML =
+      `<div class="card"><h2 style="font-size:15px">${esc(s.title)}</h2>${
+        s.rules.map(r=>`<div class="kv"><span class="k">${esc(r[0])}</span><span style="text-align:right;max-width:60%">${esc(r[1])}</span></div>`).join('')
+      }<small class="note" style="margin-top:10px">Summary for quick reference. Standards change — always confirm the current AS/NCC edition and council requirements before certifying.</small></div>`;
+  },
+};
+
+/* ---------------- Modal helpers ---------------- */
+function modal(html){ document.getElementById('modalBody').innerHTML=html; document.getElementById('modal').classList.add('on'); }
+function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal')closeModal(); });
+
+/* ---------------- Demo seed ---------------- */
+const Seed={ demo(){
+  const c1=DB.addClient({name:'Harbour View Pools',phone:'0412 345 678',email:'jobs@harbourview.com.au',address:'14 Marine Pde',suburb:'Manly',postcode:'2095'});
+  const c2=DB.addClient({name:'R. Nguyen — Ensuite reno',phone:'0400 111 222',address:'8 Wattle St',suburb:'Parramatta',postcode:'2150'});
+  DB.setActiveClient(c2);
+  DB.file({module:'Shower Screen',icon:'🚿',title:'Frameless screen — ensuite',summary:'10mm toughened · 900×2000'});
+  const t=new Date();
+  const iso=k=>{const x=new Date(t);x.setDate(t.getDate()+k);return x.toISOString().slice(0,10);};
+  DB.addJob({clientId:c1,title:'Pool fence install',type:'outdoor',date:iso(2),location:'Manly'});
+  DB.addJob({clientId:c1,title:'Compliance inspection',type:'outdoor',date:iso(5),location:'Manly'});
+  DB.addJob({clientId:c2,title:'Shower screen fit-off',type:'indoor',date:iso(3),location:'Parramatta'});
+  DB.setActiveClient(c1);
+}};
+
+/* ================= Auth + paywall gate + PWA ================= */
+const Auth = {
+  init(){
+    DB.init();                              // LOCAL mode (no Firebase config yet)
+    this.injectGate();
+    DB.auth.onUser(u=>this.route());
+    DB.onSub(()=>this.route());
+  },
+  route(){
+    const u=DB.auth.currentUser();
+    if(!u){ this.show('login'); return; }
+    if(!DB.subscription().active){ this.show('paywall'); return; }
+    this.hide(); App.boot();
+    this.mountAccountBtn(u);
+  },
+  injectGate(){
+    if(document.getElementById('gate')) return;
+    const g=document.createElement('div'); g.id='gate';
+    g.style.cssText='position:fixed;inset:0;z-index:80;display:none;overflow:auto;'+
+      'background:radial-gradient(ellipse at top left,rgba(255,255,255,.5),transparent 55%),var(--concrete-2);';
+    g.innerHTML=`<div class="wrap" style="max-width:420px;padding-top:44px">
+      <div class="logo" style="justify-content:center;font-size:26px;margin-bottom:6px"><span class="mark">CD</span>CADify</div>
+      <p class="muted" style="text-align:center;margin-top:0;letter-spacing:.16em;text-transform:uppercase;font-size:11px">On-site Shop Drawings</p>
+      <div class="card" id="gateCard" style="margin-top:20px"></div>
+      <p class="muted" style="text-align:center;font-size:11px">${DB.mode==='local'?'Local preview mode — no data leaves this device.':''}</p>
+    </div>`;
+    document.body.appendChild(g);
+  },
+  show(which){
+    App.booted=false;
+    const g=document.getElementById('gate'); g.style.display='block';
+    const card=document.getElementById('gateCard');
+    if(which==='login'){
+      card.innerHTML=`<h2>Sign in</h2>
+        <label>Email</label><input id="au_email" type="email" inputmode="email" autocomplete="username">
+        <label>Password</label><input id="au_pw" type="password" autocomplete="current-password">
+        <div id="au_name_wrap" class="hidden"><label>Name / business</label><input id="au_name"></div>
+        <div id="au_err" style="color:var(--bad);font-size:12.5px;margin-top:8px"></div>
+        <button class="btn block" style="margin-top:14px" onclick="Auth.submit()"><span id="au_btn">Sign in</span></button>
+        <button class="btn sec block" style="margin-top:8px" onclick="Auth.toggleMode()"><span id="au_toggle">New here? Create an account</span></button>
+        <small class="note" style="text-align:center">Google sign-in &amp; password reset activate in cloud mode.</small>`;
+      this.mode='signin';
+    } else {
+      const u=DB.auth.currentUser();
+      card.innerHTML=`<h2>Choose your plan</h2>
+        <p class="muted" style="margin-top:-4px">Signed in as ${esc(u.email)}. A subscription unlocks all seven calculators, client folders, the job scheduler and BOM weather.</p>
+        <div class="stat" style="margin:10px 0"><div class="n">CADify Pro</div><div class="l">everything, one subscription</div></div>
+        <button class="btn block" onclick="Auth.subscribe()">Subscribe &amp; continue</button>
+        <button class="btn ghost block" style="margin-top:8px" onclick="DB.auth.signOut()">Sign out</button>
+        <small class="note" style="text-align:center">${DB.mode==='local'?'Local mode: this unlocks instantly for testing (no charge). Stripe handles real billing in cloud mode.':'Secure checkout via Stripe.'}</small>`;
+    }
+  },
+  toggleMode(){
+    this.mode = this.mode==='signin' ? 'signup' : 'signin';
+    const signup=this.mode==='signup';
+    document.getElementById('au_name_wrap').classList.toggle('hidden',!signup);
+    document.getElementById('au_btn').textContent = signup?'Create account':'Sign in';
+    document.getElementById('au_toggle').textContent = signup?'Have an account? Sign in':'New here? Create an account';
+  },
+  submit(){
+    const email=document.getElementById('au_email').value.trim();
+    const pw=document.getElementById('au_pw').value;
+    const err=document.getElementById('au_err'); err.textContent='';
+    const p = this.mode==='signup'
+      ? DB.auth.signUp(email,pw,document.getElementById('au_name').value)
+      : DB.auth.signIn(email,pw);
+    p.catch(e=>{ err.textContent=e.message||'Could not sign in'; });
+  },
+  subscribe(){ DB.startCheckout('price_cadify_pro').catch(e=>toast(e.message||'Checkout failed')); },
+  hide(){ const g=document.getElementById('gate'); if(g) g.style.display='none'; },
+  mountAccountBtn(u){
+    if(document.getElementById('acctBtn')) return;
+    const bar=document.querySelector('.app-bar'); if(!bar) return;
+    const b=document.createElement('button'); b.id='acctBtn'; b.className='btn sm sec';
+    b.style.cssText='padding:6px 9px'; b.textContent=initials(u.name||u.email);
+    b.title='Account'; b.onclick=()=>Auth.accountSheet();
+    bar.appendChild(b);
+  },
+  accountSheet(){
+    const u=DB.auth.currentUser();
+    modal(`<h2>Account</h2>
+      <div class="kv"><span class="k">Signed in</span><b>${esc(u.email)}</b></div>
+      <div class="kv"><span class="k">Plan</span><b>${DB.subscription().active?'CADify Pro (active)':'None'}</b></div>
+      <div class="kv"><span class="k">Mode</span><span class="muted">${DB.mode}</span></div>
+      <button class="btn block danger" style="margin-top:14px" onclick="DB.auth.signOut();closeModal();">Sign out</button>
+      ${DB.mode==='local'?`<button class="btn ghost block" style="margin-top:8px" onclick="DB.devSetSubscription(false);closeModal();">Dev: cancel subscription</button>`:''}`);
+  }
+};
+
+/* PWA: register the service worker when served over http(s) */
+if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+document.addEventListener('DOMContentLoaded',()=>Auth.init());
+</script>
+</body>
+</html>
