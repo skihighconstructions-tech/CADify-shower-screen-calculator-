@@ -1,14 +1,15 @@
 /* CADify service worker — offline app shell.
    Bumps: change CACHE to invalidate on deploy. */
-const CACHE = 'cadify-v1';
+const CACHE = 'cadify-v2';
+// Cache only files that actually exist in this repository. The self-contained
+// index.html carries the embedded calculators; missing standalone paths used
+// to make cache.addAll reject the whole install batch.
 const SHELL = [
   './',
+  './index.html',
   './CADify.html',
   './cadify-bridge.js',
-  './manifest.webmanifest',
-  './calculators/glass-setout.html',
-  './calculators/pool-fence.html',
-  './calculators/shower-screen.html'
+  './manifest.webmanifest'
 ];
 
 self.addEventListener('install', e => {
