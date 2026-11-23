@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CADify Aluminium Balustrade Calculator</title>
+<style>
+:root{
+  --concrete:#E4E3DF; --card:#F2F1EE; --grey:#98968F; --line:#C8C6C0; --ink:#000; --soft:#55534E;
+  --serif: Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;background:var(--concrete);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45}
+input,select,button{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;gap:14px;padding:6px 0 18px;border-bottom:2px solid var(--ink);margin-bottom:18px}
+.logo{border:2px solid var(--ink);padding:4px 10px 3px;font-family:var(--serif);font-size:26px;letter-spacing:.5px;background:var(--card);box-shadow:2px 2px 0 var(--grey)}
+header h1{font-family:var(--serif);font-weight:normal;font-size:20px;margin:0;line-height:1.2}
+header p{margin:2px 0 0;color:var(--soft);font-size:13px}
+h2{font-family:var(--serif);font-weight:normal;font-size:21px;margin:26px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--soft);margin-bottom:3px}
+input[type=number],input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--grey);background:#fff;border-radius:0;font-variant-numeric:tabular-nums}
+select:disabled{background:var(--card);color:var(--soft)}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:3px solid var(--ink);outline-offset:1px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.hint{font-size:12.5px;color:var(--soft);margin-top:4px}
+.run{display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr 1fr auto;align-items:end;padding:10px;border:1px solid var(--line);background:#fff;margin-bottom:8px;cursor:pointer}
+.run.sel{border:2px solid var(--ink);padding:9px}
+.run .nm{grid-column:1/-1}
+@media (max-width:560px){.run{grid-template-columns:1fr 1fr}}
+button{border:2px solid var(--ink);background:var(--ink);color:#fff;padding:9px 14px;cursor:pointer;border-radius:0}
+button.ghost{background:transparent;color:var(--ink)}
+button.x{background:transparent;color:var(--ink);border:1px solid var(--grey);padding:8px 11px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:12px}
+.fig{background:var(--card);padding:10px}
+.fig b{display:block;font-family:var(--serif);font-weight:normal;font-size:24px;font-variant-numeric:tabular-nums}
+.fig small{color:var(--soft);font-size:12.5px}
+.warn{border-left:5px solid var(--ink);background:#fff;padding:9px 12px;margin:8px 0;font-size:14px}
+.warn.soft{border-left-color:var(--grey)}
+.draw{background:#fff;border:1px solid var(--line);overflow-x:auto}
+.draw svg{display:block;width:100%;height:auto;min-width:320px;max-height:70vh}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;border-bottom:2px solid var(--ink)}
+td.n,th.n{text-align:right}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:none}
+.tbl{overflow-x:auto}
+footer{color:var(--soft);font-size:12.5px;margin:30px 0 10px;border-top:1px solid var(--grey);padding-top:10px}
+[hidden]{display:none!important}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;font-size:14px;z-index:50;max-width:90%}
+@media print{
+  html,body{background:#fff}
+  .no-print,button{display:none!important}
+  .card,.draw{break-inside:avoid}
+  .wrap{max-width:none;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo" aria-label="CADify">CADify</div>
+  <div><h1>Aluminium balustrade calculator</h1><p id="subhead">Posts, rails and balusters — setout, cut list and bill of materials</p></div>
+</header>
+
+<div class="card">
+  <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+    <div><label for="job">Job / client</label><input type="text" id="job" placeholder="e.g. Smith — front balustrade"></div>
+    <div><label for="mode">Type</label>
+      <select id="mode"><option value="balustrade">Balustrade</option><option value="pool">Pool fence</option></select>
+      <div class="hint" id="modeHint"></div></div>
+    <div><label for="colour">Colour</label><input type="text" id="colour" list="colours" placeholder="Pick or type a colour">
+      <datalist id="colours"><option>Black</option><option>White</option><option>Monument</option></datalist></div>
+  </div>
+</div>
+
+<h2>System</h2>
+<div class="card">
+  <div class="grid">
+    <div><label for="post">Post size</label>
+      <select id="post"><option value="50">50 × 50</option><option value="40">40 × 40</option></select></div>
+    <div><label for="rail">Rail size</label>
+      <select id="rail"><option value="50x25">50 × 25</option><option value="40x25">40 × 25</option><option value="50x10">50 × 10</option><option value="40x10">40 × 10</option></select></div>
+    <div><label for="bal">Baluster</label>
+      <select id="bal"><option value="18R">18 mm round</option><option value="18SQ">18 mm square</option><option value="40x10">40 × 10 flat</option><option value="50x10">50 × 10 flat</option></select></div>
+    <div><label for="cc">Baluster centres</label>
+      <select id="cc"><option value="70">70 mm</option><option value="80">80 mm</option><option value="90">90 mm</option><option value="custom">Custom</option></select></div>
+    <div id="ccCustomWrap" hidden><label for="ccCustom">Custom centres (mm)</label><input type="text" id="ccCustom" inputmode="numeric"></div>
+    <div><label for="span">Max post spacing</label>
+      <select id="span"><option value="2350">2350 mm</option><option value="custom">Custom</option></select></div>
+    <div id="spanCustomWrap" hidden><label for="spanCustom">Custom spacing (mm)</label><input type="text" id="spanCustom" inputmode="numeric"></div>
+    <div><label for="pfix">Panel fixing to post</label>
+      <select id="pfix"><option value="wrap">Wraparound brackets</option><option value="concealed">Concealed U brackets</option><option value="welded">Welded</option></select>
+      <div class="hint" id="pfixHint"></div></div>
+  </div>
+</div>
+
+<h2>Heights &amp; fixing</h2>
+<div class="card">
+  <div class="grid">
+    <div><label for="height">Barrier height</label><input type="text" id="height" inputmode="numeric">
+      <div class="hint" id="heightHint"></div></div>
+    <div><label for="ground">Gap under panel (mm)</label><input type="text" id="ground" inputmode="numeric">
+      <div class="hint">Bottom of panel above finished level.</div></div>
+    <div><label for="fix">Post fixing</label>
+      <select id="fix"><option value="base">Base plate</option><option value="core">Core drilled</option><option value="side">Side fixed</option></select></div>
+    <div><label for="postLen">Post length (mm)</label><input type="text" id="postLen" inputmode="numeric" placeholder="">
+      <div class="hint" id="postLenHint"></div></div>
+  </div>
+  <div class="hint" style="margin-top:10px">Start and end of each run (end post, shared “no post”, or wall-fixed) are set per run below, so adjoining runs don’t double up a post.</div>
+</div>
+
+<h2>Runs</h2>
+<div id="runs"></div>
+<div class="row no-print"><button id="add">Add run</button></div>
+
+<h2 id="selTitle">Run</h2>
+<div id="warns"></div>
+<div class="draw" id="draw"></div>
+<div class="figs" id="figs"></div>
+
+<h2>Cut list</h2>
+<div class="card tbl" id="cuts"></div>
+
+<h2>Bill of materials</h2>
+<div class="card tbl" id="bom"></div>
+
+<div class="row no-print" style="margin-top:14px">
+  <button id="png">Save drawing to Photos</button>
+  <button class="ghost" id="copy">Copy summary</button>
+  <button class="ghost" id="savejob" data-bridge hidden>Save to job</button>
+  <button class="ghost" id="saveset" data-bridge hidden>Save setout</button>
+  <button class="ghost" id="openset" data-bridge hidden>Open saved</button>
+  <button class="ghost" id="print">Print</button>
+  <button class="ghost" id="exp">Export job (JSON)</button>
+  <button class="ghost" id="impBtn">Import job</button>
+  <input type="file" id="imp" accept=".json,application/json" hidden>
+  <button class="ghost" id="clear">Clear job</button>
+</div>
+
+<footer>All dimensions in mm. Post length, baluster spacing and gaps must be confirmed on site against the governing standard (AS 1170.1 / AS 1926.1) before cutting. Centred baluster set-out keeps the chosen centres exact and splits the leftover equally at both ends. A “no post” run end shares the adjoining run’s post and is not counted twice. CADify — On-site Shop Drawings.</footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+const CALC_ID = 'aluminium-balustrade';
+const $ = id => document.getElementById(id);
+const f0 = n => String(Math.round(n));
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const POSTW = {'50':50,'40':40};
+const RAILD = {'50x25':{f:50,d:25},'40x25':{f:40,d:25},'50x10':{f:50,d:10},'40x10':{f:40,d:10}};
+const BALW  = {'18R':18,'18SQ':18,'40x10':10,'50x10':10};
+const BALLABEL = {'18R':'18 Ø round','18SQ':'18 square','40x10':'40 × 10 flat','50x10':'50 × 10 flat'};
+const ALLOW = {base:80, core:300, side:200};   // added to barrier height, before the +25 top
+const TOP_OVER = 25;                            // post finishes 25 above top of panel
+const SPHERE = {balustrade:125, pool:100};      // max clear gap
+const ENDLABEL = {post:'End post', none:'No post (shared)', wall:'Fixed to wall'};
+const inBridge = (()=>{ try { return window.parent && window.parent !== window; } catch(e){ return false; } })();
+
+const DEF = {
+  job:'', mode:'balustrade', colour:'',
+  post:'50', rail:'50x25', bal:'18R', cc:'90', ccCustom:'90',
+  span:'2350', spanCustom:'2350', pfix:'wrap',
+  height:'1000', ground:'80', fix:'base', postLen:'',
+  sel:0, cloudId:null,
+  runs:[{name:'Run 1', len:'', qty:'1', start:'post', end:'post'}]
+};
+const normRun = r => ({ name:r.name||'Run', len:r.len||'', qty:r.qty||'1', start:r.start||'post', end:r.end||'post' });
+let job = load();
+let cloudId = job.cloudId || null;
+
+function load(){
+  try { const s = localStorage.getItem('cadify-ali-bal'); if(s){ const j = JSON.parse(s);
+    const out = {...structuredClone(DEF), ...j};
+    out.runs = (j.runs&&j.runs.length) ? j.runs.map(normRun) : structuredClone(DEF.runs);
+    return out; } } catch(e){}
+  return structuredClone(DEF);
+}
+function save(){ try { localStorage.setItem('cadify-ali-bal', JSON.stringify(job)); } catch(e){} }
+
+/* ---------- engine ---------- */
+const ccVal   = () => job.cc === 'custom' ? Math.max(1,+job.ccCustom||0) : +job.cc;
+const spanVal = () => job.span === 'custom' ? Math.max(1,+job.spanCustom||0) : +job.span;
+const postLenDefault = H => (+H||0) + (ALLOW[job.fix]||0) + TOP_OVER;
+const postLenVal = H => { const v = +job.postLen; return (job.postLen!=='' && v>0) ? v : postLenDefault(H); };
+
+function calcRun(run){
+  const L = +run.len, H = +job.height, qty = Math.max(1, parseInt(run.qty)||1);
+  const c = {L, H, qty, warn:[]};
+  if(!(L >= 100)){ c.bad = true; c.warn.push(['hard', run.len ? 'Run length must be at least 100 mm.' : 'Enter a run length.']); return c; }
+  if(!(H >= 300)){ c.bad = true; c.warn.push(['hard','Enter a barrier height of at least 300 mm.']); return c; }
+  const postW = POSTW[job.post], rail = RAILD[job.rail], balW = BALW[job.bal];
+  const S = spanVal(), p = ccVal(), ground = Math.max(0,+job.ground||0);
+  const startT = run.start||'post', endT = run.end||'post';
+  const leftGeom = startT !== 'wall', rightGeom = endT !== 'wall';   // a post (own or shared) physically sits here
+  const countStart = startT === 'post', countEnd = endT === 'post';  // only an own end post is counted
+  const bays = Math.max(1, Math.ceil(L / S));
+  const bayCentre = L / bays;
+  c.bays = bays; c.bayCentre = bayCentre;
+  c.nPost = (bays - 1) + (countStart?1:0) + (countEnd?1:0);
+  c.startT = startT; c.endT = endT; c.leftGeom = leftGeom; c.rightGeom = rightGeom;
+  c.postW = postW; c.rail = rail; c.balW = balW;
+  c.postL = postLenVal(H);
+  c.balusterLen = Math.max(0, H - ground - 2*rail.d);
+  c.baysArr = [];
+  let railPieces = [], balTotal = 0, bracketEnds = 0;
+  const limit = SPHERE[job.mode] || 125;
+  let maxGap = 0, maxEndGap = 0;
+  for(let i=0;i<bays;i++){
+    const lp = (i===0) ? leftGeom : true;
+    const rp = (i===bays-1) ? rightGeom : true;
+    const clear = bayCentre - (lp?postW/2:0) - (rp?postW/2:0);
+    let railLen = clear;
+    if(job.pfix === 'wrap') railLen -= 10*((lp?1:0)+(rp?1:0));
+    railPieces.push(railLen, railLen);
+    if(job.pfix !== 'welded') bracketEnds += (lp?1:0) + (rp?1:0);
+    let m = Math.max(1, Math.round(clear / p));
+    while(m > 1 && (m-1)*p > clear) m--;
+    const endMargin = (clear - (m-1)*p) / 2;
+    const gapClear = p - balW;
+    const endClear = endMargin - balW/2;
+    maxGap = Math.max(maxGap, gapClear);
+    maxEndGap = Math.max(maxEndGap, endClear);
+    balTotal += m;
+    c.baysArr.push({clear, railLen, m, endMargin, gapClear, endClear});
+  }
+  c.rails = railPieces;
+  c.balusters = balTotal;
+  c.brackets = (job.pfix === 'welded') ? 0 : bracketEnds*2;
+  c.maxGap = maxGap; c.maxEndGap = maxEndGap; c.limit = limit;
+  if(maxGap >= limit) c.warn.push(['hard',`Clear gap between balusters is ${f0(maxGap)} mm — the ${f0(limit)} mm limit is exceeded. Reduce the centres.`]);
+  else if(maxGap >= limit-10) c.warn.push(['soft',`Clear gap is ${f0(maxGap)} mm, close to the ${f0(limit)} mm limit.`]);
+  if(maxEndGap >= limit) c.warn.push(['hard',`End gap post-to-baluster is ${f0(maxEndGap)} mm — over the ${f0(limit)} mm limit. Add a baluster or close the centres.`]);
+  if(c.balusterLen <= 0) c.warn.push(['hard','Barrier height is too short for the rails chosen — no room for balusters.']);
+  if(c.postL > 6500) c.warn.push(['soft',`Post length ${f0(c.postL)} mm is over a 6.5 m stock length.`]);
+  if(startT==='none' || endT==='none') c.warn.push(['soft',`${(startT==='none'&&endT==='none')?'Both ends share':'One end shares'} the adjoining run’s post — not counted in this run.`]);
+  if(job.fix==='core') c.warn.push(['soft',`Core drilled: post length ${f0(c.postL)} mm = height ${f0(H)} + ${ALLOW.core} embedment + ${TOP_OVER} above panel (edit the post length field to override).`]);
+  return c;
+}
+
+/* ---------- totals across all runs ---------- */
+function totals(){
+  const posts = {}, rails = {}, bals = {};
+  let brackets = 0, nPostAll = 0, nWallEnds = 0, any = false, hard = false;
+  const rows = [];
+  job.runs.forEach(run=>{
+    const c = calcRun(run); if(c.bad) return; any = true;
+    if(c.warn.some(w=>w[0]==='hard')) hard = true;
+    const q = c.qty;
+    posts[c.postL] = (posts[c.postL]||0) + c.nPost*q;
+    nPostAll += c.nPost*q;
+    if(c.startT==='wall') nWallEnds += q;
+    if(c.endT==='wall') nWallEnds += q;
+    c.rails.forEach(len=>{ const k = Math.round(len); rails[k] = (rails[k]||0) + q; });
+    bals[c.balusterLen] = (bals[c.balusterLen]||0) + c.balusters*q;
+    brackets += c.brackets*q;
+    rows.push({run, c});
+  });
+  const fixings = [];
+  if(job.fix==='base'){ fixings.push(['Base plates', `${job.post} × ${job.post} post`, nPostAll]); fixings.push(['Dynabolts / anchors','base plate fixing', nPostAll*4]); }
+  else if(job.fix==='side'){ fixings.push(['Side-fix anchors','post to structure', nPostAll*4]); }
+  else if(job.fix==='core'){ fixings.push(['Core holes','grout / chemical set', nPostAll]); }
+  if(nWallEnds>0) fixings.push(['Wall mount plates','rail end fixed to wall', nWallEnds*2]);
+  if(brackets>0){
+    fixings.push([job.pfix==='wrap'?'Wraparound brackets':'Concealed U brackets','rail to post', brackets]);
+    fixings.push(['Tek / grub screws','bracket fixing', brackets*2]);
+  }
+  return {any, hard, rows, posts, rails, bals, brackets, fixings, nPostAll};
+}
+
+/* ---------- runs UI ---------- */
+function renderRuns(){
+  const el = $('runs'); el.innerHTML = '';
+  const opts = sel => Object.keys(ENDLABEL).map(k=>`<option value="${k}"${sel===k?' selected':''}>${ENDLABEL[k]}</option>`).join('');
+  job.runs.forEach((r,i)=>{
+    const d = document.createElement('div');
+    d.className = 'run' + (i===job.sel?' sel':'');
+    d.innerHTML =
+      `<div class="nm"><label>Run name</label><input data-k="name" data-i="${i}" type="text" value="${esc(r.name)}"></div>`+
+      `<div><label>Length (mm)</label><input data-k="len" data-i="${i}" inputmode="numeric" value="${esc(r.len)}"></div>`+
+      `<div><label>Qty</label><input data-k="qty" data-i="${i}" inputmode="numeric" value="${esc(r.qty)}"></div>`+
+      `<div><label>Start</label><select data-k="start" data-i="${i}">${opts(r.start||'post')}</select></div>`+
+      `<div><label>End</label><select data-k="end" data-i="${i}">${opts(r.end||'post')}</select></div>`+
+      `<div class="no-print"><button class="x" data-del="${i}" title="Remove"${job.runs.length>1?'':' disabled'}>✕</button></div>`;
+    d.addEventListener('click', e=>{ if(e.target.closest('input,button,select,label')) return; job.sel = i; draw(); });
+    el.appendChild(d);
+  });
+  // text inputs: update outputs without rebuilding the rows (keeps typing focus)
+  el.querySelectorAll('input').forEach(inp=> inp.addEventListener('input', e=>{
+    job.runs[+e.target.dataset.i][e.target.dataset.k] = e.target.value; updateOutputs();
+  }));
+  el.querySelectorAll('select').forEach(sel=> sel.addEventListener('change', e=>{
+    job.runs[+e.target.dataset.i][e.target.dataset.k] = e.target.value; updateOutputs();
+  }));
+  el.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{
+    const i=+e.target.dataset.del; job.runs.splice(i,1); if(job.sel>=job.runs.length) job.sel=job.runs.length-1; draw();
+  }));
+}
+
+/* ---------- drawing ---------- */
+function svgDrawing(run, c){
+  const W = 900, Hd = 420, padL = 70, padR = 40, padT = 54, padB = 72;
+  const iw = W - padL - padR, ih = Hd - padT - padB;
+  const L = c.L, H = c.H, ground = Math.max(0,+job.ground||0);
+  const sx = iw / Math.max(1,L), sy = ih / Math.max(1,H), s = Math.min(sx, sy);
+  const ox = padL + (iw - L*s)/2, gy = padT + ih;
+  const X = mm => ox + mm*s, Y = mm => gy - mm*s;
+  const postW = c.postW, rail = c.rail;
+  let g = '';
+  g += `<text x="${W/2}" y="${Hd/2+10}" text-anchor="middle" font-family="Georgia,serif" font-size="110" fill="#000" opacity="0.05" transform="rotate(-14 ${W/2} ${Hd/2})">CADIFY</text>`;
+  g += `<line x1="${padL-20}" y1="${gy}" x2="${W-padR+10}" y2="${gy}" stroke="#000" stroke-width="2"/>`;
+  for(let x=padL-18;x<W-padR+8;x+=10) g += `<line x1="${x}" y1="${gy}" x2="${x-7}" y2="${gy+7}" stroke="#777" stroke-width="1"/>`;
+  const topY = Y(H), botRailY = Y(ground + rail.d), topRailY = Y(H - rail.d);
+  // posts (own = solid, shared = dashed, wall = hatch)
+  for(let i=0;i<=c.bays;i++){
+    let type = 'post';
+    if(i===0) type = c.startT; else if(i===c.bays) type = c.endT;
+    const xm = i*c.bayCentre;
+    if(type==='wall'){
+      const wx = (i===0) ? X(xm)-10 : X(xm);
+      g += `<rect x="${wx.toFixed(1)}" y="${topY.toFixed(1)}" width="10" height="${(gy-topY).toFixed(1)}" fill="url(#hatch)" stroke="#000" stroke-width="1"/>`;
+      continue;
+    }
+    const x = X(xm) - postW*s/2, shared = (type==='none');
+    g += `<rect x="${x.toFixed(1)}" y="${topY.toFixed(1)}" width="${(postW*s).toFixed(1)}" height="${(gy-topY).toFixed(1)}" fill="${shared?'#efeee9':'#dcdbd6'}" stroke="#000" stroke-width="1.4"${shared?' stroke-dasharray="4 3"':''}/>`;
+    if(shared) g += `<text x="${X(xm).toFixed(1)}" y="${(topY-4).toFixed(1)}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#55534E">shared</text>`;
+  }
+  // rails + balusters per bay
+  c.baysArr.forEach((b,i)=>{
+    const lp = (i===0)?c.leftGeom:true, rp = (i===c.bays-1)?c.rightGeom:true;
+    const xL = X(i*c.bayCentre) + (lp?postW*s/2:0);
+    const xR = X((i+1)*c.bayCentre) - (rp?postW*s/2:0);
+    const rd = Math.max(3, rail.d*s);
+    g += `<rect x="${xL.toFixed(1)}" y="${topRailY.toFixed(1)}" width="${(xR-xL).toFixed(1)}" height="${rd.toFixed(1)}" fill="#cfcec9" stroke="#000" stroke-width="1.2"/>`;
+    g += `<rect x="${xL.toFixed(1)}" y="${(botRailY-rd).toFixed(1)}" width="${(xR-xL).toFixed(1)}" height="${rd.toFixed(1)}" fill="#cfcec9" stroke="#000" stroke-width="1.2"/>`;
+    const bw = Math.max(1.4, c.balW*s);
+    for(let k=0;k<b.m;k++){
+      const cxMM = (i*c.bayCentre) + (lp?postW/2:0) + b.endMargin + k*ccVal();
+      const cx = X(cxMM);
+      g += `<rect x="${(cx-bw/2).toFixed(1)}" y="${topRailY.toFixed(1)}" width="${bw.toFixed(1)}" height="${(botRailY-topRailY).toFixed(1)}" fill="#e7e6e1" stroke="#000" stroke-width="0.8"/>`;
+    }
+  });
+  // dimensions
+  const dimY = gy + 26;
+  g += `<line x1="${X(0)}" y1="${dimY}" x2="${X(L)}" y2="${dimY}" stroke="#000" stroke-width="1"/>`;
+  g += `<line x1="${X(0)}" y1="${dimY-5}" x2="${X(0)}" y2="${dimY+5}" stroke="#000"/><line x1="${X(L)}" y1="${dimY-5}" x2="${X(L)}" y2="${dimY+5}" stroke="#000"/>`;
+  g += `<text x="${((X(0)+X(L))/2).toFixed(1)}" y="${dimY+16}" text-anchor="middle" font-family="Georgia,serif" font-size="13">${f0(L)}</text>`;
+  const dimX = padL - 34;
+  g += `<line x1="${dimX}" y1="${Y(0)}" x2="${dimX}" y2="${topY}" stroke="#000" stroke-width="1"/>`;
+  g += `<line x1="${dimX-5}" y1="${Y(0)}" x2="${dimX+5}" y2="${Y(0)}" stroke="#000"/><line x1="${dimX-5}" y1="${topY}" x2="${dimX+5}" y2="${topY}" stroke="#000"/>`;
+  g += `<text x="${dimX-8}" y="${((Y(0)+topY)/2).toFixed(1)}" text-anchor="middle" font-family="Georgia,serif" font-size="13" transform="rotate(-90 ${dimX-8} ${((Y(0)+topY)/2).toFixed(1)})">${f0(H)}</text>`;
+  const title = `${esc(job.job||'Balustrade')} — ${esc(run.name||'Run')}`;
+  g += `<text x="${padL}" y="26" font-family="Georgia,serif" font-size="16">${title}</text>`;
+  g += `<text x="${padL}" y="43" font-family="system-ui,sans-serif" font-size="11.5" fill="#55534E">${job.mode==='pool'?'Pool fence':'Balustrade'} · ${job.post}×${job.post} posts · ${esc(job.rail.replace('x',' × '))} rails · ${esc(BALLABEL[job.bal])} @ ${f0(ccVal())} ctrs · ${c.bays} bay${c.bays>1?'s':''} · ${c.nPost} post${c.nPost!==1?'s':''} · ${ENDLABEL[c.startT].toLowerCase()} → ${ENDLABEL[c.endT].toLowerCase()}</text>`;
+  return `<svg width="${W}" height="${Hd}" viewBox="0 0 ${W} ${Hd}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">`+
+    `<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#999" stroke-width="1"/></pattern></defs>`+
+    `<rect x="0" y="0" width="${W}" height="${Hd}" fill="#fff"/>`+ g +`</svg>`;
+}
+
+/* ---------- render ---------- */
+function draw(){ renderRuns(); updateOutputs(); }
+function updateOutputs(){
+  $('ccCustomWrap').hidden = job.cc !== 'custom';
+  $('spanCustomWrap').hidden = job.span !== 'custom';
+  $('postLen').placeholder = f0(postLenDefault(+job.height||0)) + ' (default)';
+  $('postLenHint').textContent = job.fix==='core'
+    ? `Default = height + ${ALLOW.core} embedment + ${TOP_OVER} top.`
+    : (job.fix==='base' ? `Default = height + ${ALLOW.base} + ${TOP_OVER} top.` : `Default = height + ${ALLOW.side} + ${TOP_OVER} top.`);
+  $('modeHint').textContent = job.mode==='pool' ? 'Clear gap limit 100 mm.' : 'Clear gap limit 125 mm.';
+  $('pfixHint').textContent = job.pfix==='wrap' ? 'Rails cut 10 mm off each post.' : (job.pfix==='welded' ? 'Rails cut tight to the post, welded.' : 'Rails cut tight; U bracket inside each end.');
+  $('heightHint').textContent = job.mode==='pool' ? 'Pool fence default 1200.' : 'Balustrade default 1000.';
+  const run = job.runs[job.sel] || job.runs[0];
+  const c = calcRun(run);
+  $('selTitle').textContent = (run.name||'Run') + (c.bad?'':` — ${c.bays} bay${c.bays>1?'s':''}, ${c.nPost} post${c.nPost!==1?'s':''}`);
+  $('warns').innerHTML = c.warn.map(w=>`<div class="warn${w[0]==='soft'?' soft':''}">${esc(w[1])}</div>`).join('');
+  $('draw').innerHTML = c.bad ? '<div style="padding:16px;color:#55534E">Enter a run length and height to see the drawing.</div>' : svgDrawing(run, c);
+  if(c.bad){ $('figs').innerHTML=''; }
+  else {
+    const fig = (b,s)=>`<div class="fig"><b>${b}</b><small>${s}</small></div>`;
+    $('figs').innerHTML =
+      fig(f0(c.bays), 'bays @ '+f0(c.bayCentre)+' crs') +
+      fig(f0(c.nPost), 'posts @ '+f0(c.postL)+' long') +
+      fig(f0(c.balusters), 'balusters @ '+f0(c.balusterLen)+' long') +
+      fig(f0(c.maxGap), 'max clear gap (limit '+f0(c.limit)+')') +
+      fig(f0(c.brackets), job.pfix==='welded'?'welded joints':'brackets');
+  }
+  renderTables();
+  save();
+  prerenderPNG();
+}
+
+function renderTables(){
+  const t = totals();
+  if(!t.any){ $('cuts').innerHTML = '<p style="color:#55534E;margin:0">Add a run to see the cut list.</p>'; $('bom').innerHTML=''; return; }
+  const section = (title, obj) => {
+    const keys = Object.keys(obj).map(Number).sort((a,b)=>b-a).filter(k=>obj[k]>0);
+    if(!keys.length) return '';
+    let rows = keys.map(k=>`<tr><td></td><td class="n">${f0(k)}</td><td class="n">${obj[k]}</td></tr>`).join('');
+    return `<tr><td colspan="3" style="font-weight:600;background:#eceae6">${esc(title)}</td></tr>`+rows;
+  };
+  let cut = `<table><thead><tr><th>Item</th><th class="n">Length (mm)</th><th class="n">Qty</th></tr></thead><tbody>`;
+  cut += section(`Posts — ${job.post} × ${job.post}`, t.posts);
+  cut += section(`Rails — ${job.rail.replace('x',' × ')} (top & bottom)`, t.rails);
+  cut += section(`Balusters — ${BALLABEL[job.bal]}`, t.bals);
+  cut += `</tbody></table>`;
+  $('cuts').innerHTML = cut;
+  const nRails = Object.values(t.rails).reduce((a,b)=>a+b,0), nBals = Object.values(t.bals).reduce((a,b)=>a+b,0);
+  let bom = `<table><thead><tr><th>Item</th><th>Spec</th><th class="n">Qty</th></tr></thead><tbody>`;
+  bom += `<tr><td>Posts</td><td>${job.post} × ${job.post}, ${esc(FIXLABEL[job.fix])}</td><td class="n">${t.nPostAll}</td></tr>`;
+  bom += `<tr><td>Rails</td><td>${job.rail.replace('x',' × ')}, top &amp; bottom</td><td class="n">${nRails}</td></tr>`;
+  bom += `<tr><td>Balusters</td><td>${esc(BALLABEL[job.bal])} @ ${f0(ccVal())} ctrs</td><td class="n">${nBals}</td></tr>`;
+  t.fixings.forEach(([n,s,q])=>{ bom += `<tr><td>${esc(n)}</td><td>${esc(s)}</td><td class="n">${q}</td></tr>`; });
+  const panels = job.runs.reduce((a,r)=>{ const c=calcRun(r); return a + (c.bad?0:c.bays*c.qty); },0);
+  bom += `</tbody><tfoot><tr><td>Panels (bays)</td><td>${job.colour?esc(job.colour)+' ':''}${job.mode==='pool'?'pool fence':'balustrade'}</td><td class="n">${panels}</td></tr></tfoot></table>`;
+  $('bom').innerHTML = bom;
+}
+const FIXLABEL = {base:'base plate', core:'core drilled', side:'side fixed'};
+
+/* ---------- summary ---------- */
+function summaryText(){
+  const t = totals();
+  const lines = [];
+  lines.push(`CADify aluminium balustrade — ${job.job||'job'}`);
+  lines.push(`${job.mode==='pool'?'Pool fence':'Balustrade'} · ${job.colour||'colour TBC'} · ${job.post}×${job.post} posts · ${job.rail.replace('x',' × ')} rails · ${BALLABEL[job.bal]} @ ${f0(ccVal())} centres`);
+  lines.push(`Fixing: ${FIXLABEL[job.fix]} · post length ${f0(postLenVal(+job.height||0))} · height ${f0(+job.height||0)} · ${f0(+job.ground||0)} under panel`);
+  lines.push('');
+  job.runs.forEach(r=>{ const c=calcRun(r); if(c.bad) return;
+    lines.push(`${r.name||'Run'} (${f0(c.L)} × ${c.qty}, ${ENDLABEL[c.startT].toLowerCase()} → ${ENDLABEL[c.endT].toLowerCase()}): ${c.bays} bays @ ${f0(c.bayCentre)}, ${c.nPost} posts, ${c.balusters} balusters, max gap ${f0(c.maxGap)}`); });
+  lines.push('');
+  lines.push(`Totals: ${t.nPostAll} posts, ${Object.values(t.rails).reduce((a,b)=>a+b,0)} rails, ${Object.values(t.bals).reduce((a,b)=>a+b,0)} balusters${t.brackets?`, ${t.brackets} brackets`:''}`);
+  return lines.join('\n');
+}
+
+/* ---------- drawing image: save to Photos (share sheet) on mobile, download on desktop ---------- */
+let pngBlob = null;                 // pre-rendered so the share fires inside the tap gesture (iOS)
+function pngName(run){ return `${(job.job||'balustrade').replace(/[^a-z0-9]+/gi,'_')}_${(run.name||'run').replace(/[^a-z0-9]+/gi,'_')}.png`; }
+function buildPNGBlob(run, c){
+  return new Promise((res, rej)=>{
+    const svg = svgDrawing(run, c);
+    const img = new Image();
+    img.onload = ()=>{
+      try {
+        const scale = 2, cv = document.createElement('canvas');
+        cv.width = 900*scale; cv.height = 420*scale;
+        const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+        ctx.drawImage(img,0,0,cv.width,cv.height);
+        const fromDataUrl = ()=>{ const d = cv.toDataURL('image/png'); const bin = atob(d.split(',')[1]); const u8 = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); return new Blob([u8],{type:'image/png'}); };
+        if(cv.toBlob){ cv.toBlob(b=>{ try{ res(b || fromDataUrl()); }catch(e){ rej(e); } }, 'image/png'); }
+        else res(fromDataUrl());
+      } catch(e){ rej(e); }
+    };
+    img.onerror = ()=> rej(new Error('render'));
+    // data URL (not blob URL) + explicit width/height in the svg: both needed for iOS Safari canvas raster
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+}
+let preT;
+function prerenderPNG(){
+  clearTimeout(preT);
+  preT = setTimeout(async ()=>{
+    const run = job.runs[job.sel]||job.runs[0], c = calcRun(run);
+    if(c.bad){ pngBlob = null; return; }
+    try { pngBlob = await buildPNGBlob(run, c); } catch(e){ pngBlob = null; }
+  }, 250);
+}
+async function shareBlob(blob, name){
+  try {
+    const file = new File([blob], name, {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'CADify drawing'});
+      return true;
+    }
+  } catch(e){ if(e && e.name === 'AbortError') return true; }   // user cancelled the sheet
+  return false;
+}
+async function saveImage(){
+  const run = job.runs[job.sel]||job.runs[0], c = calcRun(run);
+  if(c.bad){ toast('Enter a run length and height first.'); return; }
+  const name = pngName(run);
+  // 1) cached blob -> share synchronously within the gesture (iPhone: "Save Image" to Photos)
+  if(pngBlob && await shareBlob(pngBlob, name)){ toast('Tap “Save Image” to add it to your camera roll.'); return; }
+  // 2) render fresh, then share
+  let blob; try { blob = await buildPNGBlob(run, c); } catch(e){ toast('Could not make the image.'); return; }
+  if(await shareBlob(blob, name)){ toast('Tap “Save Image” to add it to your camera roll.'); return; }
+  // 3) no Web Share: desktop downloads directly; touch devices get one clear overlay (no stacked prompts)
+  const dlUrl = URL.createObjectURL(blob);
+  const isTouch = (navigator.maxTouchPoints||0) > 0 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent||'');
+  if(isTouch){ showImageOverlay(dlUrl, name); }
+  else {
+    const a = document.createElement('a'); a.href = dlUrl; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(dlUrl), 2000); toast('Drawing downloaded.');
+  }
+}
+function showImageOverlay(src, name){
+  const o = document.createElement('div');
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px;overflow:auto';
+  o.innerHTML =
+    `<p style="color:#fff;font-size:14px;text-align:center;max-width:480px;margin:0;line-height:1.5"><b>Press and hold the image</b> and choose <b>Save to Photos</b>.<br>If that option isn’t offered, you’re in an in-app viewer — tap <b>Save to Files</b>, or open this page in Safari/Chrome.</p>`+
+    `<img src="${src}" style="max-width:100%;max-height:58vh;border:2px solid #fff;background:#fff">`+
+    `<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">`+
+      `<a href="${src}" download="${esc(name)}" style="border:2px solid #fff;background:#fff;color:#000;padding:10px 16px;text-decoration:none;font-weight:600">Save to Files</a>`+
+      `<button style="border:2px solid #fff;background:transparent;color:#fff;padding:10px 16px;cursor:pointer">Done</button>`+
+    `</div>`;
+  const close = ()=>{ o.remove(); setTimeout(()=>URL.revokeObjectURL(src), 500); };
+  o.querySelector('button').addEventListener('click', close);
+  o.addEventListener('click', e=>{ if(e.target===o) close(); });
+  document.body.appendChild(o);
+}
+
+/* ---------- JSON ---------- */
+function exportJSON(){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(job,null,2)],{type:'application/json'}));
+  a.download = `${(job.job||'balustrade').replace(/[^a-z0-9]+/gi,'_')}.json`; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function importJSON(file){ const r = new FileReader(); r.onload = ()=>{ try { const j = JSON.parse(r.result);
+  job = {...structuredClone(DEF), ...j}; job.runs = (j.runs&&j.runs.length)?j.runs.map(normRun):structuredClone(DEF.runs); job.sel=0; bindAll(); draw(); toast('Job imported.'); }
+  catch(e){ toast('Could not read that file.'); } }; r.readAsText(file); }
+
+/* ---------- app bridge ---------- */
+function serialiseForJob(){
+  const t = totals();
+  return { name: job.job || 'Balustrade', cloudId,
+    screens: job.runs.map(r=>({ name:r.name, w:r.len, h:job.height, qty:r.qty })),
+    meta: { calc: CALC_ID, mode: job.mode, posts: t.nPostAll,
+      rails: Object.values(t.rails).reduce((a,b)=>a+b,0),
+      balusters: Object.values(t.bals).reduce((a,b)=>a+b,0) },
+    full: job };
+}
+function post(m){ try { window.parent.postMessage({cadify:1, ...m}, '*'); } catch(e){} }
+function saveSetout(){ post({type:'save', job: serialiseForJob()}); toast('Saving setout…'); }
+function saveToJob(){
+  if(!totals().any){ toast('Enter a valid run before saving.'); return; }
+  // CADify app uses the active client folder and native job picker.
+  try {
+    const host = window.parent !== window ? window.parent.App : null;
+    if(host && typeof host.fileResult === 'function'){
+      const result = host.fileResult({
+        module:'Aluminium Balustrade', icon:'🛡️',
+        title:job.job || 'Aluminium Balustrade',
+        summary:summaryText(),
+        data:{calculator:CALC_ID, ...serialiseForJob()}
+      });
+      if(!result){ toast('Choose a client before saving.'); return; }
+      toast('Saved to client folder.');
+      if(typeof host.assignRecordPicker === 'function') host.assignRecordPicker(result.id);
+      return;
+    }
+  } catch(e) { /* Standalone or cross-origin host: use original message bridge. */ }
+  post({type:'saveToJob', payload:{ title:job.job||'Balustrade', type:CALC_ID, summary:summaryText(), job:serialiseForJob() }});
+}
+function openSaved(){ post({type:'list'}); }
+window.addEventListener('message', e=>{
+  const d = e.data; if(!d || d.cadify !== 1) return;
+  if(d.type==='saved'){ cloudId = d.cloudId||cloudId; job.cloudId=cloudId; save(); toast('Setout saved to your account.'); }
+  else if(d.type==='savedToJob'){ toast('Saved into the job.'); }
+  else if(d.type==='loaded' && d.job){ if(d.job.full){ job = {...structuredClone(DEF), ...d.job.full}; job.runs=(d.job.full.runs&&d.job.full.runs.length)?d.job.full.runs.map(normRun):structuredClone(DEF.runs); } cloudId=d.cloudId||cloudId; job.cloudId=cloudId; job.sel=0; bindAll(); draw(); toast('Saved job opened.'); }
+  else if(d.type==='list' && Array.isArray(d.items)){
+    if(!d.items.length){ toast('No saved balustrade setouts yet.'); return; }
+    const pick = prompt('Open which saved setout?\n'+d.items.map((it,i)=>`${i+1}. ${it.title||'Untitled'}`).join('\n'));
+    const idx = parseInt(pick)-1; if(d.items[idx]) post({type:'load', id:d.items[idx].id});
+  }
+  else if(d.type==='error'){ toast('Save error: '+(d.message||'unknown')); }
+});
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(m){ const el=$('toast'); el.textContent=m; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,2600); }
+
+/* ---------- bind ---------- */
+function bindAll(){
+  $('job').value = job.job; $('mode').value = job.mode; $('colour').value = job.colour;
+  $('post').value = job.post; $('rail').value = job.rail; $('bal').value = job.bal;
+  $('cc').value = job.cc; $('ccCustom').value = job.ccCustom;
+  $('span').value = job.span; $('spanCustom').value = job.spanCustom; $('pfix').value = job.pfix;
+  $('height').value = job.height; $('ground').value = job.ground; $('fix').value = job.fix; $('postLen').value = job.postLen;
+}
+const bindField = (id, key, after) => { const el=$(id); el.addEventListener(el.tagName==='SELECT'?'change':'input', ()=>{ job[key]=el.value; if(after) after(); draw(); }); };
+['job','colour','ground','postLen','ccCustom','spanCustom'].forEach(id=>bindField(id,id));
+bindField('mode','mode',()=>{
+  if(job.mode==='pool'){ if(job.cc!=='custom') job.cc='70'; if(job.height==='1000'||!job.height) job.height='1200'; }
+  else { if(job.cc!=='custom') job.cc='90'; if(job.height==='1200'||!job.height) job.height='1000'; }
+  bindAll();
+});
+['post','rail','bal','pfix','fix'].forEach(id=>bindField(id,id));
+bindField('cc','cc'); bindField('span','span');
+
+$('add').addEventListener('click', ()=>{ job.runs.push({name:'Run '+(job.runs.length+1), len:'', qty:'1', start:'none', end:'post'}); job.sel=job.runs.length-1; draw(); });
+$('png').addEventListener('click', saveImage);
+$('copy').addEventListener('click', ()=>{ const txt=summaryText(); (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Summary copied.')).catch(()=>{ prompt('Copy the summary:', txt); }); });
+$('print').addEventListener('click', ()=>window.print());
+$('exp').addEventListener('click', exportJSON);
+$('impBtn').addEventListener('click', ()=>$('imp').click());
+$('imp').addEventListener('change', e=>{ if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value=''; });
+$('clear').addEventListener('click', ()=>{ if(confirm('Clear this job and start again?')){ job = structuredClone(DEF); cloudId=null; bindAll(); draw(); } });
+$('savejob').addEventListener('click', saveToJob);
+$('saveset').addEventListener('click', saveSetout);
+$('openset').addEventListener('click', openSaved);
+// Only expose saving supported by the current CADify parent app.
+if(inBridge){ $('savejob').hidden=false; }
+
+bindAll();
+draw();
+</script>
+</body>
+</html>
