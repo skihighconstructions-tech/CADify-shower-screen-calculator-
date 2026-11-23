@@ -189,6 +189,7 @@ small.note{color:var(--dim);font-size:11.5px;display:block;margin-top:4px}
       <div class="row">
         <button class="btn sm" onclick="App.go('clients');App.openClientForm()">+ New client</button>
         <button class="btn sm sec" onclick="App.go('calc')">Open calculator</button>
+        <button class="btn sm sec" onclick="App.go('calc');App.openCalc('aluminium-screen')">▤ Aluminium Screens</button>
         <button class="btn sm sec" onclick="App.go('schedule')">Schedule job</button>
       </div>
     </div>
@@ -585,15 +586,22 @@ const App = {
     'glass-setout':{icon:'📐',name:'Glass Setout',sub:'Balustrade + pool fencing · panels, gaps, BOM',file:'calculators/glass-setout.html'},
     'pool-fence':{icon:'🏊',name:'Pool Fence',sub:'AS 1926.1 · panels, gates, compliance check',file:'calculators/pool-fence.html'},
     'shower-screen':{icon:'🚿',name:'Shower Screen',sub:'AS 1288 · frameless panels, hinges, DXF',file:'calculators/shower-screen.html'},
+    'aluminium-balustrade':{icon:'🛡️',name:'Aluminium Balustrade',sub:'Posts, rails, balusters · drawings and cut lists',file:'calculators/aluminium-balustrade.html'},
+    'aluminium-screen':{icon:'▤',name:'Aluminium Screens',sub:'Privacy screens, louvres, awnings · cut lists, costing',file:'calculators/aluminium-screen.html'},
   },
   renderCalcMenu(){
     const framed=Object.keys(this.framed).map(id=>Object.assign({id,framed:true,live:true},this.framed[id]));
     const stubs=[
       {id:'steel-balustrade',icon:'🛡️',name:'Steel Balustrade',sub:'NCC / AS 1170',live:false},
-      {id:'aluminium-balustrade',icon:'🛡️',name:'Aluminium Balustrade',sub:'NCC / AS 1170',live:false},
       {id:'illustrating',icon:'✏️',name:'Illustrating / Quote',sub:'estimate & illustrate',live:false},
     ];
-    document.getElementById('calcMenu').innerHTML = framed.concat(stubs).map(m=>
+    // Keep Steel Balustrade, Aluminium Balustrade, and Aluminium Screens together.
+    const ordered = framed.filter(m=>m.id!=='aluminium-screen' && m.id!=='aluminium-balustrade').concat(stubs);
+    const steelIndex = ordered.findIndex(m=>m.id==='steel-balustrade');
+    const aluminiumBalustrade = framed.find(m=>m.id==='aluminium-balustrade');
+    const aluminiumScreen = framed.find(m=>m.id==='aluminium-screen');
+    ordered.splice(steelIndex+1, 0, ...[aluminiumBalustrade, aluminiumScreen].filter(Boolean));
+    document.getElementById('calcMenu').innerHTML = ordered.map(m=>
       `<div class="mod-tile" onclick="App.openCalc('${m.id}')"><div class="ic">${m.icon}</div>
         <div style="flex:1"><div class="ttl">${m.name}</div><div class="sub">${m.sub}</div></div>
         ${m.live?'<span class="badge b-good">ready</span>':'<span class="badge b-dim">paste yours</span>'}</div>`).join('');
