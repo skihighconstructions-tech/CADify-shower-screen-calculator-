@@ -1,6 +1,6 @@
 /* CADify service worker — offline app shell.
    Bumps: change CACHE to invalidate on deploy. */
-const CACHE = 'cadify-v2-aluminium-screen';
+const CACHE = 'cadify-v3-aluminium-balustrade';
 const SHELL = [
   './',
   './CADify.html',
@@ -9,7 +9,8 @@ const SHELL = [
   './calculators/glass-setout.html',
   './calculators/pool-fence.html',
   './calculators/shower-screen.html',
-  './calculators/aluminium-screen.html'
+  './calculators/aluminium-screen.html',
+  './calculators/aluminium-balustrade.html'
 ];
 
 self.addEventListener('install', e => {
