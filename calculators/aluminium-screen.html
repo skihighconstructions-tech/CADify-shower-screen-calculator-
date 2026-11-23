@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CADify Privacy Screen Calculator</title>
+<style>
+:root{
+  --concrete:#E4E3DF; --card:#F2F1EE; --grey:#98968F; --line:#C8C6C0; --ink:#000; --soft:#55534E;
+  --serif: Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;background:var(--concrete);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45}
+input,select,button{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;gap:14px;padding:6px 0 18px;border-bottom:2px solid var(--ink);margin-bottom:18px}
+.logo{border:2px solid var(--ink);padding:4px 10px 3px;font-family:var(--serif);font-size:26px;letter-spacing:.5px;background:var(--card);box-shadow:2px 2px 0 var(--grey)}
+header h1{font-family:var(--serif);font-weight:normal;font-size:20px;margin:0;line-height:1.2}
+header p{margin:2px 0 0;color:var(--soft);font-size:13px}
+h2{font-family:var(--serif);font-weight:normal;font-size:21px;margin:26px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--soft);margin-bottom:3px}
+input[type=number],input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--grey);background:#fff;border-radius:0;font-variant-numeric:tabular-nums}
+select:disabled{background:var(--card);color:var(--soft)}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:3px solid var(--ink);outline-offset:1px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.hint{font-size:12.5px;color:var(--soft);margin-top:4px}
+.sub{margin-top:12px;padding-top:12px;border-top:1px dashed var(--grey)}
+.screen{display:grid;gap:8px;grid-template-columns:1.6fr 1fr 1fr .7fr auto;align-items:end;padding:10px;border:1px solid var(--line);background:#fff;margin-bottom:8px;cursor:pointer}
+.screen.sel{border:2px solid var(--ink);padding:9px}
+@media (max-width:560px){.screen{grid-template-columns:1fr 1fr 1fr}.screen .nm{grid-column:1/-1}}
+button{border:2px solid var(--ink);background:var(--ink);color:#fff;padding:9px 14px;cursor:pointer;border-radius:0}
+button.ghost{background:transparent;color:var(--ink)}
+button.x{background:transparent;color:var(--ink);border:1px solid var(--grey);padding:8px 11px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:12px}
+.fig{background:var(--card);padding:10px}
+.fig b{display:block;font-family:var(--serif);font-weight:normal;font-size:24px;font-variant-numeric:tabular-nums}
+.fig small{color:var(--soft);font-size:12.5px}
+.warn{border-left:5px solid var(--ink);background:#fff;padding:9px 12px;margin:8px 0;font-size:14px}
+.warn.soft{border-left-color:var(--grey)}
+.fit{border:2px solid var(--ink);background:#fff;padding:12px;margin:10px 0}
+.fit p{margin:0 0 10px;font-size:15px}
+.fit .opts{display:grid;gap:8px}
+.fit button{text-align:left;background:#fff;color:var(--ink);display:flex;flex-direction:column;gap:2px}
+.fit button small{color:var(--soft);font-size:13px}
+.fit button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.fit button[aria-pressed="true"] small{color:#ddd}
+.draw{background:#fff;border:1px solid var(--line);overflow-x:auto}
+.draw svg{display:block;width:100%;height:auto;min-width:320px;max-height:70vh}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;border-bottom:2px solid var(--ink)}
+td.n,th.n{text-align:right}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:none}
+.tbl{overflow-x:auto}
+details{background:var(--card);border:1px solid var(--line);margin-bottom:12px}
+summary{padding:12px 14px;cursor:pointer;font-family:var(--serif);font-size:18px}
+details .in{padding:0 14px 14px}
+.mat{margin:14px 0 6px;font-weight:600;font-size:14px;border-bottom:1px solid var(--grey);padding-bottom:4px}
+.bars{font-size:13.5px;color:var(--soft);margin:4px 0 0 0;padding-left:18px}
+footer{color:var(--soft);font-size:12.5px;margin:30px 0 10px;border-top:1px solid var(--grey);padding-top:10px}
+[hidden]{display:none!important}
+@media print{
+  html,body{background:#fff}
+  .no-print,button{display:none!important}
+  details{border:none}details .in{padding:0}
+  .card,.draw{break-inside:avoid}
+  .wrap{max-width:none;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo" aria-label="CADify">CADify</div>
+  <div><h1>Aluminium privacy screen calculator</h1><p id="subhead">Slotted-stile frame with horizontal 65 × 16 slats</p></div>
+</header>
+
+<div class="card">
+  <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+    <div><label for="job">Job / client</label><input type="text" id="job" placeholder="e.g. Smith — rear window hoods"></div>
+    <div><label for="colour">Colour</label><input type="text" id="colour" list="colours" placeholder="Pick or type a colour">
+      <datalist id="colours"><option>Monument Matt</option><option>Black Satin</option><option>Night Sky</option><option>Woodland Grey</option><option>Basalt</option><option>Surfmist</option><option>Dune</option><option>Pearl White</option><option>Primrose</option><option>Mill finish</option></datalist></div>
+    <div id="powderWrap"><label for="powder">Powder coating charge ex GST ($)</label><input type="text" id="powder" inputmode="decimal" step="0.01" placeholder="0.00">
+      <div class="hint">Whole job. Added to the job total.</div></div>
+    <div id="punchWrap"><label for="punch">Stile punching</label>
+      <select id="punch"><option value="straight">Straight 65 × 16 slots</option><option value="louvre">Angled louvre 65 × 16, 12 mm gap C</option></select></div>
+    <div id="louvreWrap" hidden><label for="louvreAng">Louvre angle to the stile (°)</label><input type="text" id="louvreAng" inputmode="decimal">
+      <div class="hint" id="louvreHint"></div></div>
+    <div id="louvreCWrap" hidden><label for="louvreC">Gap C between slots (mm)</label><input type="text" id="louvreC" inputmode="decimal"></div>
+    <div id="gapWrap"><label for="gap">Gap between slats</label>
+      <select id="gap"><option value="20">20 mm</option><option value="12">12 mm</option><option value="9">9 mm</option><option value="custom">Custom</option></select>
+      <div class="hint" id="pitchHint"></div></div>
+    <div id="gapCustomWrap" hidden><label for="gapCustom">Custom gap (mm)</label><input type="text" id="gapCustom" inputmode="decimal"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+    <div><label for="sys">System</label>
+      <select id="sys"><option value="welded">Welded frame (CADify)</option><option value="ox">Oxworks screw-together</option></select>
+      <div class="hint" id="sysHint"></div></div>
+    <div id="fixWrap"><label for="fix">Fixing method</label>
+      <select id="fix"><option value="pillars">Between pillars</option><option value="face">Face fixed</option><option value="core">Core drilled posts</option><option value="offset">Offset off wall (stanchions)</option><option value="awning">Awning off wall (legs)</option></select>
+      <div class="hint" id="fixHint"></div></div>
+    <div id="cornerWrap"><label>Frame corners</label><div class="hint" style="margin-top:8px">Mitred 45°. Rails and stiles are cut long point to long point, so a 1400 wide by 1500 high screen has 1400 rails and 1500 stiles.</div></div>
+  </div>
+  <div class="sub" id="oxBox" hidden>
+    <div class="grid">
+      <div><label for="oxMount">Post fixing</label>
+        <select id="oxMount"><option value="wall">Fixed to wall (coach screws)</option><option value="plate">Base plate, deck mounted</option><option value="ground">In ground</option></select></div>
+      <div id="oxDepthWrap" hidden><label for="oxDepth">Post depth in ground (mm)</label><input type="text" id="oxDepth" inputmode="numeric"></div>
+    </div>
+    <div class="hint" id="oxHint"></div>
+  </div>
+  <div class="sub" id="coreBox" hidden>
+    <div class="grid">
+      <div><label for="ext">Post extension into ground</label>
+        <select id="ext"><option value="300">Add 300 mm</option><option value="400">Add 400 mm</option><option value="custom">Custom</option></select></div>
+      <div id="extCustomWrap" hidden><label for="extCustom">Custom extension (mm)</label><input type="text" id="extCustom" inputmode="numeric"></div>
+    </div>
+  </div>
+  <div class="sub" id="offBox" hidden>
+    <div class="grid">
+      <div><label for="offset">Offset, wall to back of screen (mm)</label><input type="text" id="offset" inputmode="numeric"></div>
+      <div><label for="stanQty">Stanchions per screen</label><input type="text" id="stanQty" inputmode="numeric" min="2"></div>
+      <div><label for="flatT">Cleat thickness (mm)</label><input type="text" id="flatT" inputmode="decimal"></div>
+      <div><label for="cleatHoles">Holes per cleat</label>
+        <select id="cleatHoles"><option value="2">2 holes</option><option value="1">1 hole, centred in the part showing</option></select></div>
+      <div><label for="holeD">Cleat hole Ø (mm)</label><input type="text" id="holeD" inputmode="decimal"></div>
+    </div>
+    <div class="hint" id="armHint"></div>
+  </div>
+  <div class="sub" id="awnBox" hidden>
+    <div class="grid">
+      <div><label for="legType">Leg type</label>
+        <select id="legType"><option value="shs">50 × 50 SHS under frame</option><option value="flat">50 × 10 flat bar behind frame</option></select></div>
+      <div id="strutLWrap"><label for="strutL">Leg drop, top of frame to bottom of leg (mm)</label><input type="text" id="strutL" inputmode="numeric"></div>
+      <div id="fbDropWrap" hidden><label for="fbDrop">Flat bar below frame (mm)</label><input type="text" id="fbDrop" inputmode="numeric"></div>
+      <div><label for="strutQty">Legs per awning</label><input type="text" id="strutQty" inputmode="numeric" min="2"></div>
+      <div><label for="legHoles">Fixing holes per leg</label>
+        <select id="legHoles"><option value="2">2 holes</option><option value="1">1 hole, centred in the part showing</option></select></div>
+      <div><label for="legHoleD">Leg fixing hole Ø (mm)</label><input type="text" inputmode="decimal" id="legHoleD"></div>
+      <div><label for="legHoleEdge">2 holes: in from each end of the part showing (mm)</label><input type="text" inputmode="decimal" id="legHoleEdge"></div>
+    </div>
+    <div class="hint" id="legHint"></div>
+  </div>
+</div>
+
+<h2>Screens</h2>
+<div id="screens"></div>
+<div class="row no-print"><button id="add">Add screen</button></div>
+
+<h2 id="selTitle">Screen</h2>
+<div id="fit"></div>
+<div id="warns"></div>
+<div class="draw" id="draw"></div>
+<div class="figs" id="figs"></div>
+
+<h2>Cut list and stock order</h2>
+<div class="card tbl" id="cuts"></div>
+
+<h2>Material cost</h2>
+<div class="card tbl" id="cost"></div>
+
+<details id="setdet">
+  <summary>Materials, prices and rules</summary>
+  <div class="in">
+    <div id="weldSet">
+    <div class="mat">Top and bottom rails, stanchion arms — 50 × 50 RHS</div>
+    <div class="grid">
+      <div><label for="railWall">Wall (mm)</label><input type="text" inputmode="decimal" id="railWall" step="0.1"></div>
+      <div><label for="railStock">Stock length (mm)</label><input type="text" inputmode="decimal" id="railStock"></div>
+      <div><label for="railPrice">Price per length ex GST ($)</label><input type="text" inputmode="decimal" id="railPrice" step="0.01"></div>
+    </div>
+    <div class="mat">Slotted stiles — 50 × 50 RHS, pre-punched 65 × 16</div>
+    <div class="grid">
+      <div><label for="stileWall">Wall (mm)</label><input type="text" inputmode="decimal" id="stileWall" step="0.1"></div>
+      <div><label for="stileStock">Stock length (mm)</label><input type="text" inputmode="decimal" id="stileStock"></div>
+      <div><label for="stilePrice">Price per length ex GST ($)</label><input type="text" inputmode="decimal" id="stilePrice" step="0.01"></div>
+    </div>
+    <div class="mat">Slats — 65 × 16 × 1.2</div>
+    <div class="grid">
+      <div><label for="slatFace">Slat face height (mm)</label><input type="text" inputmode="decimal" id="slatFace"></div>
+      <div><label for="slatStock">Stock length (mm)</label><input type="text" inputmode="decimal" id="slatStock"></div>
+      <div><label for="slatPrice">Price per length ex GST ($)</label><input type="text" inputmode="decimal" id="slatPrice" step="0.01"></div>
+      <div><label for="ins">Slat insertion each end (mm)</label><input type="text" inputmode="decimal" id="ins"></div>
+    </div>
+    <div class="mat">Awning legs — 50 × 50 SHS</div>
+    <div class="grid">
+      <div><label for="strutWall">Wall (mm)</label><input type="text" inputmode="decimal" id="strutWall" step="0.1"></div>
+      <div><label for="strutStock">Stock length (mm)</label><input type="text" inputmode="decimal" id="strutStock"></div>
+      <div><label for="strutPrice">Price per length ex GST ($)</label><input type="text" inputmode="decimal" id="strutPrice" step="0.01"></div>
+    </div>
+    <div class="mat">Awning legs — flat bar</div>
+    <div class="grid">
+      <div><label for="fbW">Width (mm)</label><input type="text" inputmode="decimal" id="fbW"></div>
+      <div><label for="fbT">Thickness (mm)</label><input type="text" inputmode="decimal" id="fbT"></div>
+      <div><label for="fbStock">Stock length (mm)</label><input type="text" inputmode="decimal" id="fbStock"></div>
+      <div><label for="fbPrice">Price per length ex GST ($)</label><input type="text" inputmode="decimal" id="fbPrice"></div>
+    </div>
+    <div class="mat">Stanchion cleats — flat bar</div>
+    <div class="grid">
+      <div><label for="flatW">Flat bar width (mm)</label><input type="text" inputmode="decimal" id="flatW"></div>
+      <div><label for="cleatL">Cleat length (mm)</label><input type="text" inputmode="decimal" id="cleatL"></div>
+      <div><label for="flatStock">Stock length (mm)</label><input type="text" inputmode="decimal" id="flatStock"></div>
+      <div><label for="flatPrice">Price per length ex GST ($)</label><input type="text" inputmode="decimal" id="flatPrice" step="0.01"></div>
+    </div>
+    </div>
+    <div id="oxSet" hidden>
+    <div class="mat">Oxworks — prices inc GST as quoted (Monument and other stock colours)</div>
+    <div class="grid">
+      <div><label for="oxSlat">65 × 16 ribbed slat, per length ($)</label><input type="text" id="oxSlat" inputmode="decimal"></div><div><label for="oxPost">50 × 50 one-way post, per length ($)</label><input type="text" id="oxPost" inputmode="decimal"></div><div><label for="oxPost2">50 × 50 two-way post, per length ($)</label><input type="text" id="oxPost2" inputmode="decimal"></div>
+      <div><label for="oxCap">Concealed capping cover, per length ($)</label><input type="text" id="oxCap" inputmode="decimal"></div><div><label for="oxPlate">100 × 100 base plate, each ($)</label><input type="text" id="oxPlate" inputmode="decimal"></div>
+    </div>
+    <div class="mat">Oxworks — Red Cedar prices inc GST</div>
+    <div class="grid">
+      <div><label for="oxSlatC">Slat, per length ($)</label><input type="text" id="oxSlatC" inputmode="decimal"></div><div><label for="oxPostC">One-way post, per length ($)</label><input type="text" id="oxPostC" inputmode="decimal"></div><div><label for="oxPost2C">Two-way post, per length ($)</label><input type="text" id="oxPost2C" inputmode="decimal"></div><div><label for="oxCapC">Capping cover, per length ($)</label><input type="text" id="oxCapC" inputmode="decimal"></div><div><label for="oxPlateC">Base plate, each ($)</label><input type="text" id="oxPlateC" inputmode="decimal"></div>
+    </div>
+    <div class="mat">Oxworks — caps and screws inc GST (all colours)</div>
+    <div class="grid">
+      <div><label for="oxPostCap">50 × 50 post cap, each ($)</label><input type="text" id="oxPostCap" inputmode="decimal"></div><div><label for="oxChCap">25 × 25 channel cap, each ($)</label><input type="text" id="oxChCap" inputmode="decimal"></div><div><label for="oxHexP">10g × 16 hex screw, each ($)</label><input type="text" id="oxHexP" inputmode="decimal"></div><div><label for="oxCskP">12g × 50 SS countersunk screw, each ($)</label><input type="text" id="oxCskP" inputmode="decimal"></div><div><label for="oxCoachP">10 × 75 SS coach screw, each ($)</label><input type="text" id="oxCoachP" inputmode="decimal"></div>
+    </div>
+    <div class="mat">Oxworks — stock and fixing rules</div>
+    <div class="grid">
+      <div><label for="oxStock">Stock length (mm)</label><input type="text" id="oxStock" inputmode="numeric"></div><div><label for="oxHex">Hex screws per slat end</label><input type="text" id="oxHex" inputmode="numeric"></div><div><label for="oxCoachWall">Coach screws per post, wall fixed</label><input type="text" id="oxCoachWall" inputmode="numeric"></div><div><label for="oxCoachPlate">Coach screws per base plate</label><input type="text" id="oxCoachPlate" inputmode="numeric"></div><div><label for="oxCsk">Countersunk screws per base plate</label><input type="text" id="oxCsk" inputmode="numeric"></div><div><label for="oxDed">Slat deduction each end (mm)</label><input type="text" id="oxDed" inputmode="decimal"></div>
+    </div>
+    </div>
+    <div class="mat">Set-out rules</div>
+    <div class="grid">
+      <div><label for="maxSpan">Max slat span before mid stile (mm)</label><input type="text" inputmode="decimal" id="maxSpan"></div>
+      <div><label for="kerf">Saw kerf (mm)</label><input type="text" inputmode="decimal" id="kerf"></div>
+      <div><label for="markup">Markup on material (%)</label><input type="text" inputmode="decimal" id="markup"></div>
+    </div>
+    <div class="row no-print" style="margin-top:14px"><button class="ghost" id="reset">Restore default prices</button></div>
+  </div>
+</details>
+
+<div class="row no-print">
+  <select id="paper" aria-label="Paper size" style="width:auto"><option value="A4">A4 sheets</option><option value="A3">A3 sheets</option></select>
+  <button id="pdf">Download fabrication PDF</button>
+  <button class="ghost" id="png">Save drawing as PNG</button>
+  <button class="ghost" id="print">Print this page</button>
+  <button class="ghost" id="exp">Export job (JSON)</button>
+  <button class="ghost" id="clear">Clear job</button>
+  <button class="ghost" id="impBtn">Import job</button>
+  <input type="file" id="imp" accept=".json,application/json" hidden>
+</div>
+
+<footer>All dimensions in mm. Prices ex GST unless marked. Stile slot pitch and slat insertion must be confirmed against the supplier's punched stile before cutting. CADify — On-site Shop Drawings.</footer>
+</div>
+
+<script>
+const DEF = {railWall:2, railStock:6500, railPrice:78.45, stileWall:2, stileStock:6000, stilePrice:73.00,
+  slatFace:65, slatStock:6000, slatPrice:30.00, ins:45, maxSpan:1500, kerf:3, markup:0,
+  flatW:50, flatT:6, cleatL:150, holeD:11, flatStock:6000, flatPrice:0, strutWall:3, strutStock:6500, strutPrice:0, legHoleD:8, legHoleEdge:50, fbW:50, fbT:10, fbStock:6000, fbPrice:0,
+  oxStock:5800, oxSlat:59.40, oxPost:168.30, oxPost2:0, oxCap:37.40, oxPlate:12.65,
+  oxSlatC:64.90, oxPostC:181.50, oxPost2C:0, oxCapC:42.90, oxPlateC:25.19,
+  oxPostCap:2.53, oxChCap:2.53, oxHexP:0.10, oxCskP:1.98, oxCoachP:7.26,
+  oxHex:2, oxCoachWall:4, oxCoachPlate:4, oxCsk:4, oxDed:0};
+const JOBDEF = {name:'', colour:'', joint:'stiles', gap:'20', gapCustom:15, fix:'pillars', ext:'300', extCustom:500,
+  offset:350, stanQty:4, strutL:300, strutQty:2, cleatHoles:2, legHoles:2, punch:'straight', louvreAng:18.8, louvreC:12, legType:'shs', fbDrop:300, powder:0, sys:'welded', oxMount:'wall', oxDepth:300, sel:0, screens:[{name:'Screen 1', w:'', h:'', qty:1}]};
+const R = 50; // RHS section size
+let st = {...DEF};
+let job = JSON.parse(JSON.stringify(JOBDEF));
+const $ = id => document.getElementById(id);
+const f0 = n => String(Math.round(n));
+const f1 = n => String(Math.round(n*10)/10);
+const money = n => '$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const gapVal = () => job.gap === 'custom' ? (+job.gapCustom || 0) : +job.gap;
+const extVal = () => job.fix !== 'core' ? 0 : (job.ext === 'custom' ? (+job.extCustom || 0) : +job.ext);
+const WELDCOL = ['Monument Matt','Black Satin','Night Sky','Woodland Grey','Basalt','Surfmist','Dune','Pearl White','Primrose','Mill finish'];
+const OXCOL = ['Satin Black','Monument','Woodland Grey','Surfmist','Primrose','Ironstone','Jasper','Silver','Dune','Basalt','Pearl White','Red Cedar'];
+const OXMOUNT = {wall:'Oxworks posts fixed to wall', plate:'Oxworks posts on base plates', ground:'Oxworks posts in ground'};
+const louvreSpan = () => { const a = (+job.louvreAng || 0) * Math.PI / 180; return Math.round((st.slatFace*Math.cos(a) + 16*Math.sin(a))*10)/10; };
+// corners of a 65 × 16 blade centred at (cx,cy); long axis at ang° to the axis given by (ax,ay)
+function bladePts(cx, cy, ang, ax, ay){
+  const a = ang*Math.PI/180, ca = Math.cos(a), sa = Math.sin(a);
+  const ux = ax*ca - ay*sa, uy = ax*sa + ay*ca, vx = -uy, vy = ux, L = st.slatFace/2, T = 8;
+  return [[cx+ux*L+vx*T, cy+uy*L+vy*T],[cx+ux*L-vx*T, cy+uy*L-vy*T],[cx-ux*L-vx*T, cy-uy*L-vy*T],[cx-ux*L+vx*T, cy-uy*L+vy*T]];
+}
+// hole positions on a wall cleat, measured from the free (top) end; the arm is welded on the last 50
+const cleatHolesFromTop = () => { const L = st.cleatL, vis = L - R; return +job.cleatHoles === 1 ? [vis/2] : [20, vis - 20]; };
+const isOx = () => job.sys === 'ox';
+const cedar = () => /cedar/i.test(job.colour || '');
+const fixName = () => isOx() ? OXMOUNT[job.oxMount] : FIXNAME[job.fix];
+const FIXNAME = {pillars:'Between pillars', face:'Face fixed', core:'Core drilled posts', offset:'Offset off wall on stanchions', awning:'Awning off wall on legs'};
+
+function calcOx(sc){
+  const W = +sc.w, Hreq = +sc.h, c = {W, Hreq, warn:[], ox:true, ext:0, stan:0, strut:0};
+  if(!(W >= 200 && Hreq >= 200)){ c.bad = true; c.warn.push(['hard', (!W || !Hreq) ? 'Enter a width and height for this screen.' : 'Width and height must both be at least 200 mm.']); return c; }
+  const F = st.slatFace; c.gap = gapVal();
+  let bays = Math.max(1, Math.ceil((W - 2*R) / st.maxSpan)), clear;
+  for(let i=0;i<60;i++){ clear = (W - R*(bays+1)) / bays; if(clear <= st.maxSpan) break; bays++; }
+  c.bays = bays; c.mid = bays - 1; c.bayClear = clear;
+  c.posts = [0]; for(let k=1;k<=c.mid;k++) c.posts.push(R + k*clear + (k-1)*R); c.posts.push(W - R);
+  c.slatL = clear - 2*st.oxDed;
+  // slats only, no rails: top slat flush with the top of the post, bottom slat flush with the bottom
+  const nD = c.gap > 0 ? Math.max(0, Math.floor((Hreq + c.gap) / (F + c.gap))) : 0;
+  const HD = nD*F + Math.max(0, nD-1)*c.gap;
+  c.opts = {down:{H:HD, n:nD, g:c.gap}, up:{H:HD + F + c.gap, n:nD + 1, g:c.gap}};
+  let best = null;
+  [nD, nD + 1].forEach(n=>{ if(n < 2) return; const g = (Hreq - n*F) / (n - 1);
+    if(g >= 3 && (!best || Math.abs(g - c.gap) < Math.abs(best.g - c.gap))) best = {H:Hreq, n, g}; });
+  if(best) c.opts.exact = best;
+  c.needsFit = c.gap > 0 && nD > 0 && Math.round(HD) !== Math.round(Hreq);
+  c.fit = c.needsFit ? (sc.fit && c.opts[sc.fit] ? sc.fit : null) : 'down';
+  const o = c.opts[c.fit || 'down'];
+  c.n = o.n; c.H = o.H; c.sgap = o.g; c.pitch = F + c.sgap; c.Hup = c.opts.up.H; c.endBot = c.endTop = 0; c.span = c.H;
+  c.ext = job.oxMount === 'ground' ? Math.max(0, +job.oxDepth || 0) : 0;
+  c.postL = c.H + c.ext; c.outerL = c.postL;
+  c.nPost = bays + 1; c.oneWay = 2; c.twoWay = c.mid; c.capRuns = 2 + 2*c.mid;
+  const plate = job.oxMount === 'plate';
+  c.hw = {postCap:c.nPost, chCap:c.nPost, hex:c.n*bays*2*st.oxHex,
+    plate: plate ? c.nPost : 0, csk: plate ? c.nPost*st.oxCsk : 0,
+    coach: plate ? c.nPost*st.oxCoachPlate : (job.oxMount === 'wall' ? c.nPost*st.oxCoachWall : 0)};
+  if(c.gap <= 0) c.warn.push(['hard','Enter a slat gap greater than 0.']);
+  if(c.gap > 0 && nD === 0) c.warn.push(['hard','Screen is too short to fit a slat.']);
+  if(c.needsFit && !c.fit) c.warn.push(['hard',`${f0(Hreq)} doesn't work to ${f1(c.gap)} gaps. Pick how to run this screen above before the PDF.`]);
+  if(c.slatL > st.oxStock) c.warn.push(['hard',`Slat length ${f0(c.slatL)} exceeds the ${f0(st.oxStock)} stock length.`]);
+  if(c.postL > st.oxStock) c.warn.push(['hard',`Post length ${f0(c.postL)} exceeds the ${f0(st.oxStock)} stock length.`]);
+  if(c.mid) c.warn.push(['soft',`${c.mid} mid post${c.mid>1?'s':''} (two-way) added to keep slat spans under ${f0(st.maxSpan)}.${(cedar()?st.oxPost2C:st.oxPost2)?'':' Two-way post price not set yet.'}`]);
+  if(job.oxMount === 'ground' && c.ext <= 0) c.warn.push(['hard','Enter a post depth in the ground.']);
+  return c;
+}
+function calc(sc){
+  if(isOx()) return calcOx(sc);
+  const W = +sc.w, Hreq = +sc.h, c = {W, Hreq, warn:[]};
+  if(!(W >= 200 && Hreq >= 200)){ c.bad = true; c.warn.push(['hard', (!W || !Hreq) ? 'Enter a width and height for this screen.' : 'Width and height must both be at least 200 mm.']); return c; }
+  c.louvre = job.punch === 'louvre'; c.ang = c.louvre ? (+job.louvreAng || 0) : 0;
+  if(c.louvre){ c.gap = +job.louvreC || 0; c.face = louvreSpan(); c.pitch = c.face + c.gap;
+    if(!(+job.louvreAng > 0 && +job.louvreAng < 90)){ c.bad = true; c.warn.push(['hard','Enter a louvre angle between 0° and 90°.']); return c; } }
+  else { c.gap = gapVal(); c.face = st.slatFace; c.pitch = c.face + c.gap; }
+  c.ext = extVal(); c.core = job.fix === 'core';
+  const inside = W - 2*R;
+  let bays = Math.max(1, Math.ceil(inside / st.maxSpan)), clear;
+  for(let i=0;i<60;i++){ clear = (inside - R*(bays-1)) / bays; if(clear <= st.maxSpan) break; bays++; }
+  c.mid = bays - 1; c.bayClear = clear;
+  c.posts = [0]; for(let k=1;k<=c.mid;k++) c.posts.push(R + k*clear + (k-1)*R); c.posts.push(W - R);
+  c.slatL = inside + 2*st.ins;
+  // work the height to the spacing: rail, gap, (slat + gap) x n, rail
+  const nD = c.gap > 0 ? Math.max(0, Math.floor((Hreq - 2*R - c.gap) / c.pitch)) : 0;
+  const HD = 2*R + c.gap + nD*c.pitch;
+  c.opts = {down:{H:HD, n:nD, end:c.gap}, up:{H:HD + c.pitch, n:nD + 1, end:c.gap}};
+  // keep the asked height by stretching or squeezing the first and last gaps
+  let best = null;
+  [nD, nD + 1].forEach(n=>{ if(n < 1) return; const end = (Hreq - 2*R - n*c.face - (n-1)*c.gap) / 2;
+    if(end >= 3 && (!best || Math.abs(end - c.gap) < Math.abs(best.end - c.gap))) best = {H:Hreq, n, end}; });
+  if(best) c.opts.exact = best;
+  c.needsFit = c.gap > 0 && nD > 0 && Math.round(HD) !== Math.round(Hreq);
+  c.fit = c.needsFit ? (sc.fit && c.opts[sc.fit] ? sc.fit : null) : 'down';
+  const o = c.opts[c.fit || 'down'];
+  c.n = o.n; c.H = o.H; c.endBot = c.endTop = o.end; c.Hup = c.opts.up.H;
+  c.span = c.n*c.face + Math.max(0, c.n-1)*c.gap;
+  const H = c.H;
+  c.railTop = W; c.railBot = c.core ? W - 2*R : W;
+  c.outerL = H + c.ext; c.midL = H - 2*R;
+  c.firstOuter = R + c.ext + c.endBot; c.firstMid = c.endBot;
+  c.stan = job.fix === 'offset' ? Math.max(0, parseInt(job.stanQty) || 0) : 0;
+  c.armL = +job.offset - st.flatT;
+  c.strut = job.fix === 'awning' ? Math.max(0, parseInt(job.strutQty) || 0) : 0;
+  c.fb = job.fix === 'awning' && job.legType === 'flat';
+  if(c.fb){ c.fbBelow = +job.fbDrop || 0; c.fbL = c.fbBelow + R; c.strutL = c.fbL; c.legL = c.fbBelow; c.legCC = c.fbBelow - 2*st.legHoleEdge; }
+  else { c.strutL = +job.strutL || 0; c.legL = c.strutL - R; c.legCC = c.legL - 2*st.legHoleEdge; }
+  c.one = +job.legHoles === 1;
+  c.legPos = c.one ? [c.legL/2] : [st.legHoleEdge, c.legL - st.legHoleEdge];
+  c.holeTxt = c.one ? `1 × Ø${f1(st.legHoleD)}, centred ${f0(c.legL/2)} below the frame` : `2 × Ø${f1(st.legHoleD)}, ${f0(st.legHoleEdge)} from frame and bottom, ${f0(c.legCC)} c/c`;
+  const maxIns = R - st.stileWall;
+  if(c.gap <= 0) c.warn.push(['hard','Enter a slat gap greater than 0.']);
+  if(st.ins > maxIns) c.warn.push(['hard',`Slat insertion ${f1(st.ins)} is deeper than the inside of the stile (${f1(maxIns)}). Reduce it.`]);
+  if(c.gap > 0 && c.n === 0) c.warn.push(['hard','Screen is too short to fit a single slat between the rails.']);
+  if(c.needsFit && !c.fit) c.warn.push(['hard',`${f0(Hreq)} doesn't work to ${f1(c.gap)} gaps. Pick how to run this screen above before the PDF.`]);
+  if(c.slatL > st.slatStock) c.warn.push(['hard',`Slat length ${f0(c.slatL)} exceeds the ${f0(st.slatStock)} stock length — split the screen into two.`]);
+  if(c.railTop > st.railStock) c.warn.push(['hard',`Rail length ${f0(c.railTop)} exceeds the ${f0(st.railStock)} stock length.`]);
+  if(c.outerL > st.stileStock) c.warn.push(['hard',`Stile length ${f0(c.outerL)} exceeds the ${f0(st.stileStock)} stock length.`]);
+  if(c.core && c.ext <= 0) c.warn.push(['hard','Enter a post extension greater than 0.']);
+  if(job.fix === 'offset'){
+    if(c.armL < R) c.warn.push(['hard',`Offset of ${f0(job.offset)} leaves an arm of only ${f0(c.armL)} — increase the offset.`]);
+    if(c.stan < 2) c.warn.push(['hard','Enter at least 2 stanchions per screen.']);
+    if(+job.cleatHoles !== 1 && st.cleatL - R - 40 <= 0) c.warn.push(['hard','Cleat is too short for two holes with 20 mm edge distances. Use 1 hole or a longer cleat.']);
+    if(st.cleatL - R <= st.holeD) c.warn.push(['hard','Cleat leaves no room for a hole beside the arm.']);
+  }
+  if(job.fix === 'awning'){
+    if(c.strut < 2) c.warn.push(['hard','Enter at least 2 legs per awning.']);
+    if(!c.fb && c.legL < R) c.warn.push(['hard',`Leg drop of ${f0(c.strutL)} leaves a leg of only ${f0(c.legL)} under the frame — increase it.`]);
+    if(!c.fb && c.legL > st.strutStock) c.warn.push(['hard',`Leg length ${f0(c.legL)} exceeds the ${f0(st.strutStock)} stock length.`]);
+    if(c.fb && c.fbL > st.fbStock) c.warn.push(['hard',`Flat bar length ${f0(c.fbL)} exceeds the ${f0(st.fbStock)} stock length.`]);
+    if(c.fb) c.warn.push(['soft',`Flat bar legs hold the awning ${f1(st.fbT)} off the wall. Overall projection from the wall is ${f1(c.H + st.fbT)}.`]);
+    if(!c.one && c.legL >= R && c.legCC <= 0) c.warn.push(['hard',`Leg of ${f0(c.legL)} is too short for two holes ${f0(st.legHoleEdge)} in from each end.`]);
+  }
+  if(c.louvre) c.warn.push(['soft',`Angled louvre stiles: left punched (M2-502agl-sp6516-12mm-L) and right punched (-R) outer stiles${c.mid?', double punched (-dp6516-12mm) mid stiles':''}. ${f1(+job.louvreAng)}° gives ${f1(c.face)} per slot along the stile, ${f1(c.pitch)} c/c. Angle measured off the supplier drawing — confirm the pitch on a sample length.`]);
+  if(c.mid) c.warn.push(['soft',`${c.mid} mid stile${c.mid>1?'s':''} added to keep slat spans under ${f0(st.maxSpan)}. Mid stiles need slots punched through both faces so the slats run continuous.`]);
+  return c;
+}
+
+// Nest pieces into stock. Mitred pieces (m) sit head to tail sharing one 45° cut,
+// so each mitred piece after a mitred piece only uses its length less 50 plus the angled kerf.
+function pack(pieces, stock, kerf){
+  const mk = kerf*Math.SQRT2;
+  const list = [...pieces].sort((a,b)=>((b.m?1:0)-(a.m?1:0)) || (b.len-a.len)), bars = [];
+  const cost = (b,p) => !b.cuts.length ? p.len : (p.m && b.lastM ? mk + p.len - R : kerf + p.len);
+  for(const p of list){
+    let bar = bars.find(b => b.used + cost(b,p) <= stock + 1e-6);
+    if(!bar){ bar = {used:0, cuts:[], lastM:false}; bars.push(bar); }
+    bar.used += cost(bar,p); bar.cuts.push(p); bar.lastM = !!p.m;
+  }
+  bars.forEach(b=>b.left = stock - b.used);
+  return bars;
+}
+
+function totalsOx(){
+  const pc = {post1:[], post2:[], slat:[], cap:[]}, hw = {postCap:0, chCap:0, hex:0, plate:0, csk:0, coach:0}; const rows = []; let any = false, hard = false;
+  job.screens.forEach(sc=>{
+    const c = calc(sc); if(c.bad) return; any = true;
+    if(c.warn.some(w=>w[0]==='hard')) hard = true;
+    for(let q=0;q<sc.qty;q++){
+      for(let k=0;k<2;k++) pc.post1.push({len:c.postL});
+      for(let k=0;k<c.twoWay;k++) pc.post2.push({len:c.postL});
+      for(let k=0;k<c.n*c.bays;k++) pc.slat.push({len:c.slatL});
+      for(let k=0;k<c.capRuns;k++) pc.cap.push({len:c.H});
+      Object.keys(hw).forEach(k=>hw[k]+=c.hw[k]);
+    }
+    rows.push({nm:sc.name || 'Screen', sc, c});
+  });
+  const C = cedar(), col = job.colour || 'colour TBC', ex = v => (+v || 0) / 1.1;
+  const defs = [
+    ['One-way posts', `50 × 50 concealed fix, ${col}`, pc.post1, C?st.oxPostC:st.oxPost],
+    ['Two-way posts', `50 × 50 concealed fix, ${col}`, pc.post2, C?st.oxPost2C:st.oxPost2],
+    ['Slats', `65 × 16 ribbed, ${col}`, pc.slat, C?st.oxSlatC:st.oxSlat],
+    ['Capping cover', `concealed capping, ${col}`, pc.cap, C?st.oxCapC:st.oxCap]];
+  const mats = defs.filter(d=>d[2].length).map(([name,spec,pcs,inc])=>{
+    const stock = st.oxStock, price = ex(inc), bars = pack(pcs, stock, st.kerf), lm = pcs.reduce((a,p)=>a+p.len,0)/1000;
+    return {name, spec, pcs, stock, price, bars, lm, util: bars.length ? Math.min(100, bars.reduce((a,b)=>a+b.used,0)/(bars.length*stock)*100) : 0, cost: bars.length*price};
+  });
+  [['Post caps','50 × 50 plastic',hw.postCap,st.oxPostCap],['Channel caps','25 × 25 plastic',hw.chCap,st.oxChCap],
+   ['Hex screws','10g × 16, colour matched',hw.hex,st.oxHexP],['Base plates',`100 × 100, ${col}`,hw.plate,C?st.oxPlateC:st.oxPlate],
+   ['Countersunk screws','12g × 50 SS, base plates',hw.csk,st.oxCskP],['Coach screws','10 × 75 SS',hw.coach,st.oxCoachP]]
+   .forEach(([name,spec,qty,inc])=>{ if(qty>0){ const price = ex(inc); mats.push({each:true, name, spec, qty, price, cost:qty*price, bars:[], pcs:[], lm:0}); } });
+  return {any, hard, rows, mats};
+}
+function totals(){
+  if(isOx()) return totalsOx();
+  const pc = {rail:[], stile:[], slat:[], flat:[], strut:[], fb:[], lvL:[], lvR:[], lvD:[]}; const rows = []; let any = false, hard = false;
+  job.screens.forEach(sc=>{
+    const c = calc(sc); if(c.bad) return; any = true;
+    if(c.warn.some(w=>w[0]==='hard')) hard = true;
+    const nm = sc.name || 'Screen';
+    for(let q=0;q<sc.qty;q++){
+      pc.rail.push({len:c.railTop, m:true}, {len:c.railBot, m:!c.core});
+      for(let k=0;k<c.stan;k++) pc.rail.push({len:c.armL});
+      if(c.louvre){ pc.lvL.push({len:c.outerL, m:!c.core}); pc.lvR.push({len:c.outerL, m:!c.core}); for(let k=0;k<c.mid;k++) pc.lvD.push({len:c.midL}); }
+      else { pc.stile.push({len:c.outerL, m:!c.core}, {len:c.outerL, m:!c.core});
+      for(let k=0;k<c.mid;k++) pc.stile.push({len:c.midL}); }
+      for(let k=0;k<c.n;k++) pc.slat.push({len:c.slatL});
+      for(let k=0;k<c.stan;k++) pc.flat.push({len:st.cleatL});
+      for(let k=0;k<c.strut;k++) (c.fb ? pc.fb : pc.strut).push({len: c.fb ? c.fbL : c.legL});
+    }
+    rows.push({nm, sc, c});
+  });
+  const defs = [
+    ['Rails and stanchion arms', `50 × 50 × ${st.railWall} RHS`, pc.rail, st.railStock, st.railPrice],
+    ['Slotted stiles', `50 × 50 × ${st.stileWall} RHS, punched`, pc.stile, st.stileStock, st.stilePrice],
+    ['Louvre stiles, left punched', 'M2-502agl-sp6516-12mm-L', pc.lvL, st.stileStock, st.stilePrice],
+    ['Louvre stiles, right punched', 'M2-502agl-sp6516-12mm-R', pc.lvR, st.stileStock, st.stilePrice],
+    ['Louvre stiles, double punched', 'M2-502agl-dp6516-12mm', pc.lvD, st.stileStock, st.stilePrice],
+    ['Slats', '65 × 16 × 1.2', pc.slat, st.slatStock, st.slatPrice],
+    ['Awning legs', `50 × 50 × ${st.strutWall} SHS`, pc.strut, st.strutStock, st.strutPrice],
+    ['Awning flat bar legs', `${st.fbW} × ${st.fbT} flat bar`, pc.fb, st.fbStock, st.fbPrice],
+    ['Stanchion cleats', `${st.flatW} × ${st.flatT} flat bar`, pc.flat, st.flatStock, st.flatPrice]];
+  const mats = defs.filter(d=>d[2].length).map(([name,spec,pcs,stock,price])=>{
+    const bars = pack(pcs, stock, st.kerf), lm = pcs.reduce((a,p)=>a+(p.cut||p.len),0)/1000;
+    return {name, spec, pcs, stock, price, bars, lm, util: bars.length ? Math.min(100, bars.reduce((a,b)=>a+b.used,0)/(bars.length*stock)*100) : 0, cost: bars.length*price};
+  });
+  return {any, hard, rows, mats};
+}
+
+/* ---------- UI ---------- */
+function renderScreens(){
+  const box = $('screens'); box.innerHTML = '';
+  job.screens.forEach((sc,i)=>{
+    const d = document.createElement('div');
+    d.className = 'screen' + (i===job.sel?' sel':'');
+    d.innerHTML = `<div class="nm"><label>Name / location</label><input type="text" data-k="name" value="${esc(sc.name)}"></div>
+      <div><label>Width</label><input type="text" inputmode="numeric" data-k="w" value="${sc.w}" placeholder="e.g. 1800"></div>
+      <div><label>Height</label><input type="text" inputmode="numeric" data-k="h" value="${sc.h}" placeholder="e.g. 1200"></div>
+      <div><label>Qty</label><input type="text" inputmode="numeric" min="1" data-k="qty" value="${sc.qty}"></div>
+      <div class="no-print">${job.screens.length>1?'<button class="x" data-del aria-label="Remove screen">Remove</button>':''}</div>`;
+    const pick = ()=>{ if(job.sel!==i){ job.sel=i; markSel(); renderResult(); } };
+    d.addEventListener('focusin', pick);
+    d.addEventListener('click', e=>{
+      if(e.target.hasAttribute('data-del')){ job.screens.splice(i,1); job.sel=Math.min(job.sel,job.screens.length-1); renderScreens(); renderAll(); return; }
+      pick();
+    });
+    d.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{
+      const k = inp.dataset.k; if(k==='h') delete sc.fit; sc[k] = k==='name' ? inp.value : (k==='qty' ? Math.max(1,parseInt(inp.value)||1) : parseFloat(inp.value)||0);
+      renderAll();
+    }));
+    box.appendChild(d);
+  });
+}
+function markSel(){ [...$('screens').children].forEach((d,i)=>d.classList.toggle('sel',i===job.sel)); }
+
+function syncFixUI(){
+  const ox = isOx();
+  const lv = !ox && job.punch === 'louvre';
+  $('punchWrap').hidden = ox; $('louvreWrap').hidden = $('louvreCWrap').hidden = !lv; $('gapWrap').hidden = lv;
+  $('gapCustomWrap').hidden = lv || job.gap !== 'custom';
+  $('louvreHint').textContent = lv ? `65 × cos + 16 × sin of ${f1(+job.louvreAng||0)}° = ${f1(louvreSpan())} per slot, plus ${f1(+job.louvreC||0)} gap C = ${f1(louvreSpan() + (+job.louvreC||0))} c/c.` : '';
+  ['fixWrap','cornerWrap','powderWrap','weldSet'].forEach(id=>$(id).hidden = ox);
+  $('oxSet').hidden = !ox; $('oxBox').hidden = !ox; $('oxDepthWrap').hidden = !(ox && job.oxMount === 'ground');
+  const cl = (ox ? OXCOL : WELDCOL).map(x=>`<option>${x}</option>`).join('');
+  if($('colours').innerHTML !== cl) $('colours').innerHTML = cl;
+  $('subhead').textContent = ox ? 'Oxworks screw-together posts with 65 × 16 ribbed slats' : 'Slotted-stile frame with horizontal 65 × 16 slats';
+  $('sysHint').textContent = ox ? `Oxworks stock colours. Prices are entered inc GST as quoted${cedar()?'; Red Cedar prices in use':''}.` : 'Welded aluminium frame, powder coated.';
+  $('oxHint').textContent = {wall:`Posts fixed to the wall, ${f0(st.oxCoachWall)} coach screws per post.`, plate:`Base plate on each post: ${f0(st.oxCsk)} countersunk screws and ${f0(st.oxCoachPlate)} coach screws per plate.`, ground:'Posts run past the bottom slat into the ground.'}[job.oxMount] + ' Slats screw into the post channel; capping cover clips over.';
+  if(ox){ $('coreBox').hidden = $('offBox').hidden = $('awnBox').hidden = true; $('pitchHint').textContent = gapVal() > 0 ? `${f1(st.slatFace + gapVal())} mm centre to centre` : ''; return; }
+  $('coreBox').hidden = job.fix !== 'core';
+  $('extCustomWrap').hidden = job.ext !== 'custom';
+  $('offBox').hidden = job.fix !== 'offset';
+  $('awnBox').hidden = job.fix !== 'awning';
+  const g = gapVal();
+  $('pitchHint').textContent = g > 0 ? `Slot pitch ${f1(st.slatFace + g)} mm centre to centre` : '';
+  $('fixHint').textContent = {
+    pillars:'Posts are the outer stiles, same height as the screen.',
+    face:'Posts are the outer stiles, same height as the screen.',
+    core:'Outer stiles run past the bottom rail into the ground. Top corners mitred, bottom rail fits between the posts.',
+    offset:'Frame is the screen height. Arms and wall cleats hold it off the wall.',
+    awning:'Awning sits square off the wall. Height is the projection; width runs along the wall.'}[job.fix];
+  const fbOn = job.legType === 'flat'; $('strutLWrap').hidden = fbOn; $('fbDropWrap').hidden = !fbOn;
+  if(fbOn){ const b = +job.fbDrop || 0;
+    $('legHint').textContent = `${f0(st.fbW)} × ${f0(st.fbT)} flat bar welded to the back of the frame at each back corner, running up behind the 50 frame. Bar length ${f0(b + R)} (${f0(b)} below + 50 behind). Awning sits ${f1(st.fbT)} off the wall. ${+job.legHoles===1 ? `1 × Ø${f1(st.legHoleD)} hole through the ${f0(st.fbW)} face, centred ${f0(b/2)} below the frame.` : `2 × Ø${f1(st.legHoleD)} holes through the ${f0(st.fbW)} face, ${f0(st.legHoleEdge)} in from each end of the part showing, ${f0(b - 2*st.legHoleEdge)} centres.`}`; }
+  else $('legHint').textContent = `Legs drop down the wall face from each back corner, square to the frame. Leg cut length ${f0((+job.strutL||0) - R)} (drop minus the 50 frame), square cut, welded under the frame. ${+job.legHoles===1 ? `1 × Ø${f1(st.legHoleD)} hole, centred ${f0(((+job.strutL||0) - R)/2)} below the frame.` : `2 × Ø${f1(st.legHoleD)} holes, ${f0(st.legHoleEdge)} in from each end, ${f0((+job.strutL||0) - R - 2*st.legHoleEdge)} centres.`}`;
+  $('armHint').textContent = `Arm length ${f0(+job.offset - st.flatT)} (offset minus ${f1(st.flatT)} cleat). ${+job.cleatHoles === 1 ? `1 hole, ${f0((st.cleatL-R)/2)} into the ${f0(st.cleatL-R)} showing (${f0(st.cleatL-(st.cleatL-R)/2)} from the arm end).` : `Holes ${f0(R+20)} and ${f0(st.cleatL-20)} from the arm end.`}`;
+}
+
+function dimSVG(x1,y1,x2,y2,t,fs,vert){
+  const a = fs*.35;
+  if(!vert) return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y1}"/><line x1="${x1}" y1="${y1-a}" x2="${x1}" y2="${y1+a}"/><line x1="${x2}" y1="${y1-a}" x2="${x2}" y2="${y1+a}"/><text x="${(x1+x2)/2}" y="${y1-fs*.35}" text-anchor="middle" font-size="${fs}">${t}</text>`;
+  return `<line x1="${x1}" y1="${y1}" x2="${x1}" y2="${y2}"/><line x1="${x1-a}" y1="${y1}" x2="${x1+a}" y2="${y1}"/><line x1="${x1-a}" y1="${y2}" x2="${x1+a}" y2="${y2}"/><text x="${x1 - fs*.5}" y="${(y1+y2)/2}" font-size="${fs}" text-anchor="end" dominant-baseline="middle">${t}</text>`;
+}
+function drawSVGox(c){
+  const {W,H} = c, Ht = H + c.ext, fs = Math.max(W,Ht)/30, padL = fs*6, padR = fs*3, padT = fs*3, padB = fs*3, V = 'vector-effect="non-scaling-stroke"';
+  let s = `<svg viewBox="${-padL} ${-padT} ${W+padL+padR} ${Ht+padT+padB}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Screen elevation">`;
+  s += `<g fill="#D6D4CE" stroke="#000" stroke-width="1">`;
+  for(let i=0;i<c.n;i++){ const y = i*c.pitch; for(let b=0;b<c.bays;b++){ const x = c.posts[b] + R; s += `<rect x="${x}" y="${y}" width="${c.posts[b+1]-x}" height="${st.slatFace}" ${V}/>`; } }
+  s += `</g><g fill="#98968F" stroke="#000" stroke-width="1.5">`;
+  c.posts.forEach(x=> s += `<rect x="${x}" y="0" width="${R}" height="${H}" ${V}/>`);
+  s += `</g>`;
+  if(c.ext){
+    s += `<g fill="none" stroke="#000" stroke-width="1.2" stroke-dasharray="8 6">${c.posts.map(x=>`<rect x="${x}" y="${H}" width="${R}" height="${c.ext}" ${V}/>`).join('')}</g>`;
+    s += `<line x1="${-fs*2}" y1="${H}" x2="${W+fs*2}" y2="${H}" stroke="#000" stroke-width="2" ${V}/>`;
+  }
+  s += `<g stroke="#000" fill="#000" stroke-width="1" font-family="system-ui,Arial,sans-serif" style="vector-effect:non-scaling-stroke">`;
+  s += dimSVG(0, Ht + fs*2, W, 0, f0(W), fs);
+  s += dimSVG(-fs*1.2, 0, 0, H, f0(H), fs, true);
+  if(c.ext) s += dimSVG(-fs*4.2, 0, 0, Ht, 'post ' + f0(c.postL), fs*.85, true);
+  s += dimSVG(c.posts[0]+R, -fs*1.3, c.posts[1], 0, 'slat ' + f0(c.slatL), fs);
+  if(c.n) s += `<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="${fs*1.1}" fill="#000" stroke="#fff" stroke-width="${fs*.25}" paint-order="stroke">${c.n} slats, ${f1(c.sgap)} gaps</text>`;
+  return s + '</g></svg>';
+}
+function drawSVG(c){
+  if(c.bad) return '<p style="padding:16px">Enter a width and height to see the elevation.</p>';
+  if(c.ox) return drawSVGox(c);
+  const {W,H} = c, Ht = H + c.ext, fs = Math.max(W,Ht)/30, padL = fs*6, padR = fs*3, padT = fs*3, padB = fs*3;
+  let s = `<svg viewBox="${-padL} ${-padT} ${W+padL+padR} ${Ht+padT+padB}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Screen elevation">`;
+  s += `<g fill="#D6D4CE" stroke="#000" stroke-width="1">`;
+  const eg = c.louvre ? 16*Math.sin(c.ang*Math.PI/180) : 0;
+  for(let i=0;i<c.n;i++){ const y = H - R - c.endBot - i*c.pitch - c.face; s += `<rect x="${R}" y="${y}" width="${W-2*R}" height="${c.face - eg}" vector-effect="non-scaling-stroke"/>`;
+    if(eg) s += `<rect x="${R}" y="${y + c.face - eg}" width="${W-2*R}" height="${eg}" fill="#8F8D86" vector-effect="non-scaling-stroke"/>`; }
+  s += `</g><g fill="#98968F" stroke="#000" stroke-width="1.5">`;
+  const V = 'vector-effect="non-scaling-stroke"';
+  const poly = pts => `<polygon points="${pts.map(q=>q.join(',')).join(' ')}" ${V}/>`;
+  s += poly([[0,0],[W,0],[W-R,R],[R,R]]);
+  if(c.core){
+    s += `<rect x="${R}" y="${H-R}" width="${W-2*R}" height="${R}" ${V}/>` + poly([[0,0],[R,R],[R,H],[0,H]]) + poly([[W,0],[W-R,R],[W-R,H],[W,H]]);
+  } else {
+    s += poly([[0,H],[W,H],[W-R,H-R],[R,H-R]]) + poly([[0,0],[R,R],[R,H-R],[0,H]]) + poly([[W,0],[W-R,R],[W-R,H-R],[W,H]]);
+  }
+  c.posts.slice(1,-1).forEach(x=> s += `<rect x="${x}" y="${R}" width="${R}" height="${H-2*R}" ${V}/>`);
+  s += `</g>`;
+  if(c.ext){
+    s += `<g fill="none" stroke="#000" stroke-width="1.2" stroke-dasharray="8 6"><rect x="0" y="${H}" width="${R}" height="${c.ext}" ${V}/><rect x="${W-R}" y="${H}" width="${R}" height="${c.ext}" ${V}/></g>`;
+    s += `<line x1="${-fs*2}" y1="${H}" x2="${W+fs*2}" y2="${H}" stroke="#000" stroke-width="2" ${V}/>`;
+  }
+  s += `<g stroke="#000" fill="#000" stroke-width="1" font-family="system-ui,Arial,sans-serif" style="vector-effect:non-scaling-stroke">`;
+  s += dimSVG(0, Ht + fs*2, W, 0, f0(W), fs);
+  s += dimSVG(-fs*1.2, 0, 0, H, f0(H), fs, true);
+  if(c.ext) s += dimSVG(-fs*4.2, 0, 0, Ht, 'post ' + f0(c.outerL), fs*.85, true);
+  s += dimSVG(R - st.ins, -fs*1.3, W - R + st.ins, 0, 'slat ' + f0(c.slatL), fs);
+  if(c.n) s += `<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="${fs*1.1}" fill="#000" stroke="#fff" stroke-width="${fs*.25}" paint-order="stroke">${c.louvre?`${c.n} × 65 × 16 blades at ${f1(c.ang)}°, ${f1(c.pitch)} c/c`:`${c.n} slats, ${f1(c.gap)} gaps${c.endBot!==c.gap?`, ${f1(c.endBot)} ends`:''}`}</text>`;
+  return s + '</g></svg>';
+}
+
+function renderResult(){
+  const sc = job.screens[job.sel], c = calc(sc);
+  $('selTitle').textContent = (sc.name || 'Screen') + (sc.qty>1?` (× ${sc.qty})`:'');
+  $('fit').innerHTML = '';
+  if(!c.bad && c.needsFit){
+    const O=c.opts, b=(k,t,d)=>O[k]?`<button type="button" data-fit="${k}" aria-pressed="${c.fit===k}"><span>${t}</span><small>${d}</small></button>`:'';
+    $('fit').innerHTML = `<div class="fit" role="group" aria-label="Confirm screen height">
+      <p><b>${f0(c.Hreq)} doesn't work to ${f1(c.gap)} gaps.</b> ${c.fit?'Running as selected. Tap another to change.':'How do you want to run it?'}</p><div class="opts">
+      ${b('down',`Run at ${f1(O.down.H)}`,`${O.down.n} slats, ${f1(c.gap)} gaps all the way`)}
+      ${b('up',`Next full blade, ${f1(O.up.H)}`,`${O.up.n} slats, ${f1(c.gap)} gaps all the way`)}
+      ${b('exact',`Keep ${f0(c.Hreq)}`,O.exact?(c.ox?`${O.exact.n} slats, gaps opened or closed to ${f1(O.exact.g)}`:`${O.exact.n} slats, ${f1(c.gap)} between slats, ${f1(O.exact.end)} first and last gap`):'')}
+      </div></div>`;
+    $('fit').querySelectorAll('[data-fit]').forEach(x=>x.onclick=()=>{ sc.fit=x.dataset.fit; renderAll(); });
+  }
+  $('warns').innerHTML = c.warn.map(w=>`<div class="warn ${w[0]==='soft'?'soft':''}">${w[1]}</div>`).join('');
+  $('draw').innerHTML = drawSVG(c);
+  if(c.bad){ $('figs').innerHTML=''; return; }
+  const F = (v,l)=>`<div class="fig"><b>${v}</b><small>${l}</small></div>`;
+  if(c.ox){
+    let h = F(f1(c.H), c.H !== c.Hreq ? `screen height, worked to spacing (asked ${f0(c.Hreq)})` : 'screen height') +
+      F(c.n,'slats high') + F(f0(c.slatL),`slat cut length (× ${c.n*c.bays})`) + F(f1(c.sgap),'gap between slats') +
+      F(f0(c.postL),`post length (${c.nPost} posts${c.twoWay?`, ${c.twoWay} two-way`:''})`) + F(f0(c.bayClear),'clear between posts') +
+      F(c.hw.hex,'hex screws per screen');
+    if(c.hw.plate) h += F(c.hw.plate,'base plates per screen');
+    if(c.hw.coach) h += F(c.hw.coach,'coach screws per screen');
+    $('figs').innerHTML = h; return;
+  }
+  let h = F(f1(c.H), c.H !== c.Hreq ? `screen height, worked to spacing (asked ${f0(c.Hreq)})` : 'screen height') +
+    F(c.n,'slats per screen') + F(f0(c.slatL),'slat cut length') + (c.endBot!==c.gap ? F(`${f1(c.gap)} / ${f1(c.endBot)}`,'gap between slats / first and last gap') : F(f1(c.gap),'gap between slats and to each rail')) +
+    F(c.core ? `${f0(c.railTop)} / ${f0(c.railBot)}` : f0(c.railTop), c.core ? 'top rail mitred / bottom rail between posts' : 'rail length, long point (× 2)') +
+    F(f1(c.outerL), (c.ext?'post / outer stile':'outer stile') + ', long point (× 2)') +
+    F(f1(c.firstOuter),'outer stile: bottom end to first slot');
+  if(c.mid) h += F(f1(c.midL),`mid stile, square cut (× ${c.mid})`) + F(f0(c.bayClear),'clear bay between stiles');
+  if(c.stan) h += F(f0(c.armL),`stanchion arm length (× ${c.stan})`) + F(`${f0(st.cleatL)} × ${f0(st.flatW)} × ${f1(st.flatT)}`,`wall cleat (× ${c.stan})`);
+  if(c.strut && c.fb) h += F(f0(c.fbL),`flat bar, ${f0(st.fbW)} × ${f0(st.fbT)} (× ${c.strut})`) + F(f0(c.fbBelow),'flat bar below frame') + F(c.one?`1 × Ø${f1(st.legHoleD)} @ ${f0(c.legL/2)}`:`2 × Ø${f1(st.legHoleD)} @ ${f0(c.legCC)}`, c.one?'hole, centred below the frame':'holes in the part below the frame') + F(f1(c.H + st.fbT),'overall projection from wall');
+  else if(c.strut) h += F(f0(c.strutL),'leg drop, top of frame to bottom of leg') + F(f0(c.legL),`leg cut, 50 × 50 × ${f1(st.strutWall)} SHS (× ${c.strut})`) + F(c.one?`1 × Ø${f1(st.legHoleD)} @ ${f0(c.legL/2)}`:`2 × Ø${f1(st.legHoleD)} @ ${f0(c.legCC)}`,c.one?'leg hole, centred below the frame':`leg holes, ${f0(st.legHoleEdge)} in from each end`);
+  $('figs').innerHTML = h;
+}
+
+function renderTotals(){
+  const T = totals();
+  if(!T.any){ $('cuts').innerHTML='<p>Add a screen with a width and height.</p>'; $('cost').innerHTML=''; return; }
+  if(T.rows.length && T.rows[0].c.ox){
+    const rows = T.rows.map(({nm,sc,c})=>`<tr><td>${esc(nm)}</td><td class="n">${sc.qty}</td><td class="n">${f0(c.postL)} × ${c.nPost*sc.qty}</td><td class="n">${f0(c.slatL)} × ${c.n*c.bays*sc.qty}</td><td class="n">${f0(c.H)} × ${c.capRuns*sc.qty}</td></tr>`).join('');
+    let bh = '';
+    T.mats.filter(m=>!m.each).forEach(m=>{ bh += `<div class="mat">${m.name} — ${m.spec}: ${m.bars.length} × ${f0(m.stock)} lengths, ${m.lm.toFixed(2)} lm cut (${f0(m.util)}% used)</div><ol class="bars">` +
+      m.bars.map(b=>`<li>${b.cuts.map(p=>f0(p.len)).join(', ')} — offcut ${f0(Math.max(0,b.left))}</li>`).join('') + '</ol>'; });
+    const hw = T.mats.filter(m=>m.each);
+    if(hw.length) bh += `<div class="mat">Caps and screws</div><ol class="bars">${hw.map(m=>`<li>${m.qty} × ${m.name.toLowerCase()} — ${m.spec}</li>`).join('')}</ol>`;
+    $('cuts').innerHTML = `<table><thead><tr><th>Screen</th><th class="n">Qty</th><th class="n">Posts</th><th class="n">Slats</th><th class="n">Capping</th></tr></thead><tbody>${rows}</tbody></table>` + bh +
+      `<p style="font-size:13px;color:var(--soft);margin-top:12px">Square cuts, kerf ${f0(st.kerf)} mm. Capping cover is one run per post channel face. Oxworks prices are entered inc GST and shown here ex GST.</p>` +
+      (T.hard?'<div class="warn">One or more screens have a problem flagged — check them before ordering.</div>':'');
+  } else {
+  let rows = T.rows.map(({nm,sc,c})=>`<tr><td>${esc(nm)}</td><td class="n">${sc.qty}</td><td class="n">${c.core?`${f0(c.railTop)} × ${sc.qty}<br>${f0(c.railBot)} × ${sc.qty}`:`${f0(c.railTop)} × ${2*sc.qty}`}</td><td class="n">${f1(c.outerL)} × ${2*sc.qty}${c.mid?`<br>${f0(c.midL)} × ${c.mid*sc.qty}`:''}</td><td class="n">${f0(c.slatL)} × ${c.n*sc.qty}</td>${c.stan?`<td class="n">${f0(c.armL)} × ${c.stan*sc.qty}</td>`:c.strut?`<td class="n">${f0(c.fb?c.fbL:c.legL)} × ${c.strut*sc.qty}</td>`:'<td class="n">—</td>'}</tr>`).join('');
+  let bh = '';
+  T.mats.forEach(m=>{
+    bh += `<div class="mat">${m.name} — ${m.spec}: ${m.bars.length} × ${f0(m.stock)} lengths, ${m.lm.toFixed(2)} lm cut (${f0(m.util)}% used)</div><ol class="bars">` +
+      m.bars.map(b=>`<li>${b.cuts.map(p=>f1(p.cut||p.len)+(p.m?'m':'')).join(', ')} — offcut ${f0(Math.max(0,b.left))}</li>`).join('') + '</ol>';
+  });
+  $('cuts').innerHTML = `<table><thead><tr><th>Screen</th><th class="n">Qty</th><th class="n">Rails</th><th class="n">Stiles</th><th class="n">Slats</th><th class="n">Arms / legs</th></tr></thead><tbody>${rows}</tbody></table>` +
+    bh + `<p style="font-size:13px;color:var(--soft);margin-top:12px">Mitred rails and stiles are nested head to tail off one 45° cut, so each extra piece in a length only uses its long point less 50. Kerf ${f0(st.kerf)} mm. Check the punching lines up where each stile is cut.</p>` +
+    (T.hard?'<div class="warn">One or more screens have a problem flagged — check them before ordering.</div>':'');
+  }
+  let sub = 0, cr = '';
+  T.mats.forEach(m=>{ sub += m.cost;
+    cr += `<tr><td>${m.name}<br><small style="color:var(--soft)">${m.spec}</small></td><td class="n">${m.each?'—':m.lm.toFixed(2)}</td><td class="n">${m.each?m.qty:m.bars.length}</td><td class="n">${m.price?money(m.price):'<small>set price</small>'}</td><td class="n">${money(m.cost)}</td></tr>`; });
+  const mk = sub*st.markup/100, pw = isOx() ? 0 : Math.max(0, +job.powder || 0), ex = sub+mk+pw, gst = ex*0.1;
+  $('cost').innerHTML = `<table><thead><tr><th>Material</th><th class="n">Linear m</th><th class="n">Qty</th><th class="n">Each ex GST</th><th class="n">Total ex GST</th></tr></thead><tbody>${cr}
+    ${st.markup?`<tr><td>Markup ${f1(st.markup)}%</td><td></td><td></td><td></td><td class="n">${money(mk)}</td></tr>`:''}
+    ${isOx()?'':`<tr><td>Powder coating${job.colour?`<br><small style="color:var(--soft)">${esc(job.colour)}</small>`:''}</td><td></td><td></td><td></td><td class="n">${pw?money(pw):'<small>enter charge</small>'}</td></tr>`}
+    <tr><td>Subtotal ex GST</td><td></td><td></td><td></td><td class="n">${money(ex)}</td></tr>
+    <tr><td>GST 10%</td><td></td><td></td><td></td><td class="n">${money(gst)}</td></tr></tbody>
+    <tfoot><tr><td>Total inc GST</td><td></td><td></td><td></td><td class="n">${money(ex+gst)}</td></tr></tfoot></table>`;
+}
+function renderAll(){ syncFixUI(); renderResult(); renderTotals(); }
+
+/* ---------- PDF writer (vector, no libraries) ---------- */
+const PT = 72/25.4; let PW = 420, PH = 297;
+const fm = v => String(Math.round(v*1000)/1000);
+const encT = s => String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)')
+  .replace(/×/g,'\xD7').replace(/Ø/g,'\xD8').replace(/—/g,'\x97').replace(/–/g,'\x96').replace(/°/g,'\xB0').replace(/[^\x00-\xFF]/g,'?');
+const HEX = h => [1,3,5].map(i=>fm(parseInt(h.substr(i,2),16)/255)).join(' ');
+function tw(s,size,f){ let w=0;
+  for(const ch of String(s)){
+    if(/[0-9]/.test(ch)) w+=.556; else if(' .,:|'.includes(ch)) w+=.278; else if(/[A-Z]/.test(ch)) w+=(f==='F2'?.72:.667);
+    else if(/[a-z]/.test(ch)) w+=.5; else if(ch==='×') w+=.584; else if(ch==='Ø') w+=.778; else if(ch==='—') w+=1; else w+=.5; }
+  return w*size; }
+class Pg{
+  constructor(){ this.o=[`${fm(PT)} 0 0 ${fm(-PT)} 0 ${fm(PH*PT)} cm 1 J 1 j`]; }
+  w(v){this.o.push(`${fm(v)} w`);return this}
+  sc(h){this.o.push(HEX(h)+' RG');return this}
+  fc(h){this.o.push(HEX(h)+' rg');return this}
+  dash(a){this.o.push(a?`[${a}] 0 d`:'[] 0 d');return this}
+  line(x1,y1,x2,y2){this.o.push(`${fm(x1)} ${fm(y1)} m ${fm(x2)} ${fm(y2)} l S`);return this}
+  rect(x,y,w,h,m='S'){this.o.push(`${fm(x)} ${fm(y)} ${fm(w)} ${fm(h)} re ${m}`);return this}
+  poly(pts,m='S'){this.o.push(pts.map((q,i)=>`${fm(q[0])} ${fm(q[1])} ${i?'l':'m'}`).join(' ')+` h ${m}`);return this}
+  circ(cx,cy,r,m='S'){const k=.5523*r,P=(a,b)=>fm(a)+' '+fm(b);
+    this.o.push(`${P(cx+r,cy)} m ${P(cx+r,cy+k)} ${P(cx+k,cy+r)} ${P(cx,cy+r)} c ${P(cx-k,cy+r)} ${P(cx-r,cy+k)} ${P(cx-r,cy)} c ${P(cx-r,cy-k)} ${P(cx-k,cy-r)} ${P(cx,cy-r)} c ${P(cx+k,cy-r)} ${P(cx+r,cy-k)} ${P(cx+r,cy)} c ${m}`);return this}
+  t(x,y,s,size=2.5,o={}){ const f=o.f||'F1', w=tw(s,size,f); let tm;
+    if(o.rot){ const yy = o.a==='c'? y+w/2 : o.a==='r'? y+w : y; tm=`0 -1 -1 0 ${fm(x)} ${fm(yy)}`; }
+    else { const xx = o.a==='c'? x-w/2 : o.a==='r'? x-w : x; tm=`1 0 0 -1 ${fm(xx)} ${fm(y)}`; }
+    this.o.push(`BT /${f} ${fm(size)} Tf ${tm} Tm (${encT(s)}) Tj ET`); return this; }
+}
+function buildPDF(pages){
+  const objs=[]; const add=s=>{objs.push(s);return objs.length;};
+  add('<< /Type /Catalog /Pages 2 0 R >>'); add('');
+  const font=b=>`<< /Type /Font /Subtype /Type1 /BaseFont /${b} /Encoding /WinAnsiEncoding >>`;
+  add(font('Helvetica')); add(font('Helvetica-Bold')); add(font('Times-Roman'));
+  const kids=[];
+  pages.forEach(p=>{ const s=p.o.join('\n'); const c=add(`<< /Length ${s.length} >>\nstream\n${s}\nendstream`);
+    kids.push(add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${fm(PW*PT)} ${fm(PH*PT)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents ${c} 0 R >>`)+' 0 R'); });
+  objs[1]=`<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${kids.length} >>`;
+  let out='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'; const off=[];
+  objs.forEach((o,i)=>{ off.push(out.length); out+=`${i+1} 0 obj\n${o}\nendobj\n`; });
+  const x=out.length;
+  out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+off.map(v=>String(v).padStart(10,'0')+' 00000 n \n').join('');
+  out+=`trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${x}\n%%EOF`;
+  const b=new Uint8Array(out.length); for(let i=0;i<out.length;i++) b[i]=out.charCodeAt(i)&255; return b;
+}
+
+/* ---------- drawing helpers (paper mm) ---------- */
+const DS = 2.3, INK='#000000', GREY='#98968F', SLAT='#DAD8D2', PALE='#E4E3DF';
+const SCALES=[1,2,2.5,4,5,10,15,20,25,30,40,50,75,100,150,200,250,300];
+const pickScale=(w,h,bw,bh)=>{ for(const N of SCALES) if(w/N<=bw && h/N<=bh) return N; return 400; };
+function tick(p,x,y){ p.line(x-.8,y+.8,x+.8,y-.8); }
+function dH(p,x1,x2,y,label,e1,e2){
+  if(Math.abs(x2-x1)<.01) return;
+  p.w(.15).sc(INK).fc(INK).dash(null);
+  const ext=(x,e)=>{ if(e==null) return; const d=y>e?1:-1; p.line(x,e+d*1,x,y+d*1.4); };
+  ext(x1,e1); ext(x2,e2);
+  p.line(Math.min(x1,x2)-1,y,Math.max(x1,x2)+1,y); tick(p,x1,y); tick(p,x2,y);
+  const w=tw(label,DS);
+  if(w+1.2 < Math.abs(x2-x1)) p.t((x1+x2)/2,y-.8,label,DS,{a:'c'});
+  else p.t(Math.max(x1,x2)+1.6,y-.8,label,DS);
+}
+function dV(p,y1,y2,x,label,e1,e2){
+  if(Math.abs(y2-y1)<.01) return;
+  p.w(.15).sc(INK).fc(INK).dash(null);
+  const ext=(y,e)=>{ if(e==null) return; const d=x>e?1:-1; p.line(e+d*1,y,x+d*1.4,y); };
+  ext(y1,e1); ext(y2,e2);
+  p.line(x,Math.min(y1,y2)-1,x,Math.max(y1,y2)+1); tick(p,x,y1); tick(p,x,y2);
+  const w=tw(label,DS);
+  if(w+1.2 < Math.abs(y2-y1)) p.t(x-.8,(y1+y2)/2,label,DS,{rot:1,a:'c'});
+  else p.t(x+1.4,(y1+y2)/2+.8,label,DS);
+}
+function chainH(p,xs,y,labels,e){ for(let i=0;i<xs.length-1;i++) dH(p,xs[i],xs[i+1],y,labels[i],e,e); }
+function chainV(p,ys,x,labels,e){ for(let i=0;i<ys.length-1;i++) dV(p,ys[i],ys[i+1],x,labels[i],e,e); }
+function wrap(s,size,maxW){ const words=String(s).split(' '), out=[]; let line='';
+  for(const w of words){ const t=line?line+' '+w:w; if(tw(t,size)>maxW && line){ out.push(line); line=w; } else line=t; }
+  if(line) out.push(line); return out; }
+function hatch(p,x1,x2,y,down){ p.w(.12); for(let x=x1;x<=x2;x+=2.2) p.line(x,y,x-1.6,y+(down?1.6:-1.6)); }
+
+function sheetFrame(p,title,sub){
+  p.w(.5).sc(INK).rect(8,8,404,281); p.w(.2).rect(10,10,400,277);
+  p.fc(INK).t(15,19,title,5,{f:'F2'}); p.fc('#55534E').t(15,24.5,sub,2.7);
+  p.fc(GREY).t(405,21,'CADify',10,{f:'F3',a:'r'});
+  p.w(.35).sc(INK).line(10,28,410,28); p.line(10,204,410,204); p.fc(INK);
+}
+function sheetFrameA4(p,title,sub){
+  p.w(.4).sc(INK).rect(6,6,285,198); p.w(.15).rect(7.5,7.5,282,195);
+  p.fc(INK).t(10,13.5,title,3.8,{f:'F2'}); p.fc('#55534E').t(10,17.8,sub,2);
+  p.fc(GREY).t(286,15.5,'CADify',7,{f:'F3',a:'r'});
+  p.w(.3).sc(INK).line(7.5,20,289.5,20); p.line(7.5,147,289.5,147); p.fc(INK);
+}
+function titleBlockA4(p,fields){
+  const x=178,y=149,w=110,h=52, cw=w/2, rh=h/4;
+  p.w(.25).sc(INK).rect(x,y,w,h); p.w(.12);
+  for(let r=1;r<4;r++) p.line(x,y+r*rh,x+w,y+r*rh);
+  p.line(x+cw,y,x+cw,y+h);
+  fields.slice(0,8).forEach((f,i)=>{ const cx=x+(i%2)*cw+1.8, cy=y+Math.floor(i/2)*rh;
+    p.fc('#55534E').t(cx,cy+3.4,f[0],1.6); p.fc(INK);
+    wrap(String(f[1]).toUpperCase(),2.2,cw-3.6).slice(0,2).forEach((l,j)=>p.t(cx,cy+7.6+j*2.8,l,2.2,{f:'F2'})); });
+}
+function titleBlock(p,fields){
+  const x=250,y=206,w=158,h=79;
+  p.w(.3).sc(INK).rect(x,y,w,h); p.line(x+44,y,x+44,y+h);
+  // logo cell
+  p.fc(PALE).rect(x+.5,y+.5,43,h-1,'f');
+  p.fc('#B9B7B0').t(x+22.6,y+42.6,'CADify',9,{f:'F3',a:'c'});
+  p.fc(INK).t(x+22,y+42,'CADify',9,{f:'F3',a:'c'});
+  p.w(.7).sc(INK); const bx=x+6,by=y+30,bw=32,bh=18,k=4;
+  p.line(bx,by+k,bx,by).line(bx,by,bx+k,by).line(bx+bw-k,by,bx+bw,by).line(bx+bw,by,bx+bw,by+k)
+   .line(bx,by+bh-k,bx,by+bh).line(bx,by+bh,bx+k,by+bh).line(bx+bw-k,by+bh,bx+bw,by+bh).line(bx+bw,by+bh,bx+bw,by+bh-k);
+  p.fc('#55534E').t(x+22,y+55,'ON-SITE SHOP DRAWINGS',1.9,{a:'c'});
+  // fields 2 cols x 4 rows
+  const cw=(w-44)/2, rh=h/4; p.w(.15).sc(INK);
+  for(let r=1;r<4;r++) p.line(x+44,y+r*rh,x+w,y+r*rh);
+  p.line(x+44+cw,y,x+44+cw,y+h);
+  fields.slice(0,8).forEach((f,i)=>{ const cx=x+44+(i%2)*cw+2, cy=y+Math.floor(i/2)*rh;
+    p.fc('#55534E').t(cx,cy+4.2,f[0],1.9); p.fc(INK);
+    wrap(String(f[1]).toUpperCase(),2.7,cw-4).slice(0,3).forEach((l,j)=>p.t(cx,cy+9.4+j*3.4,l,2.7,{f:'F2'})); });
+}
+
+function elevationOx(p,c,bx,by,bw,bh){
+  const Ht=c.H+c.ext, mL=30, mR=34, mT=14, mB=22;
+  const N=pickScale(c.W,Ht,bw-mL-mR,bh-mT-mB), s=1/N;
+  const ox=bx+mL+((bw-mL-mR)-c.W*s)/2, oy=by+mT+((bh-mT-mB)-Ht*s)/2;
+  const X=v=>ox+v*s, Y=v=>oy+v*s, W=c.W, H=c.H;
+  p.w(.12).sc(INK).fc(SLAT);
+  for(let i=0;i<c.n;i++) for(let b=0;b<c.bays;b++){ const x=c.posts[b]+R; p.rect(X(x),Y(i*c.pitch),(c.posts[b+1]-x)*s,st.slatFace*s,'B'); }
+  p.w(.25).fc(GREY); c.posts.forEach(x=>p.rect(X(x),Y(0),R*s,H*s,'B'));
+  if(c.ext){
+    p.dash('1.2 .8').w(.25); c.posts.forEach(x=>p.rect(X(x),Y(H),R*s,c.ext*s)); p.dash(null);
+    p.w(.45).line(X(0)-10,Y(H),X(W)+10,Y(H)); hatch(p,X(0)-8,X(W)+10,Y(H),true);
+    p.fc(INK).t(X(0)-10,Y(H)-1,'GROUND',2);
+  }
+  const xs=[]; c.posts.forEach(x=>xs.push(x,x+R));
+  const lab=[]; for(let i=0;i<xs.length-1;i++) lab.push(f0(xs[i+1]-xs[i]));
+  chainH(p,xs.map(X),Y(Ht)+7,lab,Y(H));
+  dH(p,X(0),X(W),Y(Ht)+14,f0(W),Y(H),Y(H));
+  dH(p,X(R),X(c.posts[1]),Y(0)-6,'SLAT '+f0(c.slatL),Y(0),Y(0));
+  dV(p,Y(0),Y(H),X(0)-8,f1(H),X(0),X(0));
+  if(c.ext) dV(p,Y(0),Y(Ht),X(0)-16,'POST '+f0(c.postL),X(0),X(0));
+  const ys=[0,st.slatFace,st.slatFace+c.sgap,H], yl=[f0(st.slatFace),f1(c.sgap),`${c.n-1} × (${f0(st.slatFace)} + ${f1(c.sgap)})`];
+  if(c.ext){ ys.push(Ht); yl.push(f0(c.ext)+' IN GROUND'); }
+  chainV(p,ys.map(Y),X(W)+9,yl,X(W));
+  p.fc(INK).t(bx+bw/2,by+bh-1,`ELEVATION — VIEWED FROM FRONT   1:${N}`,3,{f:'F2',a:'c'});
+  return N;
+}
+function elevation(p,c,bx,by,bw,bh){
+  if(c.ox) return elevationOx(p,c,bx,by,bw,bh);
+  const Ht=c.H+c.ext, mL=30, mR=34, mT=14, mB=22;
+  const N=pickScale(c.W,Ht,bw-mL-mR,bh-mT-mB), s=1/N;
+  const ox=bx+mL+((bw-mL-mR)-c.W*s)/2, oy=by+mT+((bh-mT-mB)-Ht*s)/2;
+  const X=v=>ox+v*s, Y=v=>oy+v*s, W=c.W, H=c.H;
+  p.w(.12).sc(INK).fc(SLAT);
+  const eg = c.louvre ? 16*Math.sin(c.ang*Math.PI/180) : 0;
+  for(let i=0;i<c.n;i++){ const y=H-R-c.endBot-i*c.pitch-c.face; p.fc(SLAT).rect(X(R),Y(y),(W-2*R)*s,(c.face-eg)*s,'B'); if(eg) p.fc('#8F8D86').rect(X(R),Y(y+c.face-eg),(W-2*R)*s,eg*s,'B'); }
+  if(c.louvre) p.fc('#55534E').t(X(W/2),Y(0)-((c.stan||c.strut)?16:11.5),`65 × 16 BLADES AT ${f1(c.ang)}° — FACE AND LOWER EDGE SHOWN`,2,{a:'c'});
+  p.w(.25).fc(GREY);
+  const PP = pts => p.poly(pts.map(q=>[X(q[0]),Y(q[1])]),'B');
+  PP([[0,0],[W,0],[W-R,R],[R,R]]);
+  if(c.core){ p.rect(X(R),Y(H-R),(W-2*R)*s,R*s,'B'); PP([[0,0],[R,R],[R,H],[0,H]]); PP([[W,0],[W-R,R],[W-R,H],[W,H]]); }
+  else { PP([[0,H],[W,H],[W-R,H-R],[R,H-R]]); PP([[0,0],[R,R],[R,H-R],[0,H]]); PP([[W,0],[W-R,R],[W-R,H-R],[W,H]]); }
+  c.posts.slice(1,-1).forEach(x=>p.rect(X(x),Y(R),R*s,(H-2*R)*s,'B'));
+  if(c.ext){
+    p.dash('1.2 .8').w(.25).rect(X(0),Y(H),R*s,c.ext*s).rect(X(W-R),Y(H),R*s,c.ext*s).dash(null);
+    p.w(.45).line(X(0)-10,Y(H),X(W)+10,Y(H)); hatch(p,X(0)-8,X(W)+10,Y(H),true);
+    p.fc(INK).t(X(0)-10,Y(H)-1,'GROUND',2);
+  }
+  if(c.stan){ p.fc('#55534E').t(X(W/2),Y(0)-12,`${c.stan} STANCHIONS BEHIND — SEE SIDE VIEW AND DETAIL`,2,{a:'c'}); }
+  if(c.strut){ p.fc('#55534E').t(X(W/2),Y(0)-12,`BACK RAIL ${c.fb?`${f0(st.fbT)} OFF WALL — ${c.strut} FLAT BAR LEGS BEHIND`:`AGAINST WALL — ${c.strut} LEGS UNDER`} — SEE SIDE VIEW`,2,{a:'c'}); }
+  // bottom chain + overall
+  const xs=[0,R]; c.posts.slice(1,-1).forEach(x=>xs.push(x,x+R)); xs.push(W-R,W);
+  const lab=[]; for(let i=0;i<xs.length-1;i++) lab.push(f0(xs[i+1]-xs[i]));
+  chainH(p,xs.map(X),Y(Ht)+7,lab,Y(H));
+  dH(p,X(0),X(W),Y(Ht)+14,f0(W),Y(H),Y(H));
+  // slat length on top
+  p.dash('.8 .6').w(.15).line(X(R-st.ins),Y(H-R-c.endBot-c.face),X(R-st.ins),Y(H-R-c.endBot)).line(X(W-R+st.ins),Y(H-R-c.endBot-c.face),X(W-R+st.ins),Y(H-R-c.endBot)).dash(null);
+  dH(p,X(R-st.ins),X(W-R+st.ins),Y(0)-6,'SLAT '+f0(c.slatL),Y(0),Y(0));
+  // left overall
+  dV(p,Y(0),Y(H),X(0)-8,f1(H),X(0),X(0));
+  if(c.ext) dV(p,Y(0),Y(Ht),X(0)-16,'POST '+f1(c.outerL),X(0),X(0));
+  // right chain
+  const ys=[0,R,R+c.endTop,H-R-c.endBot,H-R,H], yl=[f0(R),f1(c.endTop),`${c.n} × ${f1(c.face)} + ${Math.max(0,c.n-1)} × ${f1(c.gap)} = ${f1(c.span)}`,f1(c.endBot),f0(R)];
+  if(c.ext){ ys.push(Ht); yl.push(f0(c.ext)+' IN GROUND'); }
+  chainV(p,ys.map(Y),X(W)+9,yl,X(W));
+  p.fc(INK).t(bx+bw/2,by+bh-1,`${job.fix==='awning'?'PLAN — VIEWED FROM ABOVE':'ELEVATION — VIEWED FROM FRONT'}   1:${N}`,3,{f:'F2',a:'c'});
+  return N;
+}
+
+function sideView(p,c,bx,by,bw,bh){
+  const H=c.H, mL=14,mR=16,mT=12,mB=14; let N;
+  if(c.ox){
+    const Ht=H+c.ext, pl=job.oxMount==='plate', wall=job.oxMount==='wall';
+    N=pickScale(R+260,Ht+60,bw-mL-mR,bh-mT-mB); const s=1/N;
+    const ox=bx+bw/2-R*s/2, oy=by+mT+((bh-mT-mB)-(Ht+(pl?10:0))*s)/2, X=v=>ox+v*s, Y=v=>oy+v*s;
+    p.w(.2).sc(INK).fc(GREY).rect(X(0),Y(0),R*s,H*s,'B');
+    p.w(.15).fc(SLAT); for(let i=0;i<c.n;i++) p.rect(X(R/2-8),Y(i*c.pitch),16*s,st.slatFace*s,'B');
+    if(wall){ p.w(.45).line(X(0),Y(-40),X(0),Y(H+40)); p.w(.12); for(let y=Y(-40);y<=Y(H+40);y+=2.2) p.line(X(0),y,X(0)-1.6,y+1.6); p.fc(INK).t(X(0)-3,Y(H/2),'WALL',2,{rot:1,a:'c'}); }
+    if(pl){ p.w(.2).fc(GREY).rect(X(-25),Y(H),100*s,Math.max(.5,6*s),'B'); p.w(.45).line(X(-60),Y(H)+Math.max(.5,6*s),X(R+60),Y(H)+Math.max(.5,6*s)); p.fc(INK).t(X(-62),Y(H)+1.5,'DECK',2,{a:'r'}); }
+    if(c.ext){ p.dash('1.2 .8').w(.25).rect(X(0),Y(H),R*s,c.ext*s).dash(null); p.w(.45).line(X(0)-12,Y(H),X(R)+12,Y(H)); hatch(p,X(0)-10,X(R)+12,Y(H),true);
+      dV(p,Y(H),Y(Ht),X(0)-6,f0(c.ext),X(0),X(0)); }
+    dV(p,Y(0),Y(H),X(R)+7,f0(H),X(R),X(R));
+    dH(p,X(0),X(R),Y(0)-5,f0(R),Y(0),Y(0));
+    const fx = {wall:`${f0(st.oxCoachWall)} × 10×75 SS COACH SCREWS PER POST TO WALL`, plate:`100×100 BASE PLATE, ${f0(st.oxCsk)} × 12g CSK + ${f0(st.oxCoachPlate)} × COACH SCREWS`, ground:`POST ${f0(c.ext)} IN GROUND — FOOTING TBC`}[job.oxMount];
+    p.fc(INK).t(bx+bw/2,by+bh-8,fx,2,{a:'c'});
+  } else if(job.fix==='awning'){
+    // square off the wall: frame top at y=0, projecting H; leg down the wall face from the back corner
+    const D=c.strutL, rw=H+60, rh=Math.max(D,R)+60;
+    if(c.fb){ const T=st.fbT, B=c.fbBelow;
+      const FW=st.fbW, GAPV=120;
+      N=pickScale(H+T+GAPV+FW+120,D+80,bw-mL-mR,bh-mT-mB); const s=1/N;
+      const ox=bx+mL+((bw-mL-mR)-(H+T+GAPV+FW+40)*s)/2+30*s, oy=by+mT+((bh-mT-mB)-(D+40)*s)/2+20*s, X=v=>ox+v*s, Y=v=>oy+v*s;
+      p.w(.45).sc(INK).line(X(0),Y(-40),X(0),Y(D+40)); p.w(.12);
+      for(let y=Y(-40);y<=Y(D+40);y+=2.2) p.line(X(0),y,X(0)-1.6,y+1.6);
+      p.fc(INK).t(X(0)-3,Y(D/2),'WALL',2,{rot:1,a:'c'});
+      p.w(.25).fc(GREY).rect(X(0),Y(0),T*s,D*s,'B').rect(X(T),Y(0),H*s,R*s,'B');
+      p.fc(INK).t(X(T)+14,Y(R+B/2),`FLAT BAR ${f0(D)} — ${f0(st.fbW)}×${f0(st.fbT)}`,2).fc('#55534E').t(X(T)+14,Y(R+B/2)+2.7,`WELDED TO BACK OF FRAME, 50 UP BEHIND`,1.8);
+      dH(p,X(T),X(T+H),Y(0)-6,'STILE '+f1(H),Y(0),Y(0));
+      dH(p,X(0),X(T+H),Y(0)-12,'PROJECTION FROM WALL '+f1(T+H),Y(0),Y(0));
+      dH(p,X(0),X(T),Y(D)+5,f1(T),Y(D),Y(D));
+      dV(p,Y(0),Y(D),X(0)-15,'BAR '+f0(D),X(0),X(0));
+      const HY=c.legPos.map(v=>R+v), hr=st.legHoleD/2;
+      // holes run through the 10 thickness into the wall: hidden lines in the side view
+      p.w(.12).sc(INK).dash('.8 .5'); HY.forEach(yv=>p.line(X(0),Y(yv-hr),X(T),Y(yv-hr)).line(X(0),Y(yv+hr),X(T),Y(yv+hr))); p.dash(null);
+      p.w(.1).dash('1.5 .5 .3 .5'); HY.forEach(yv=>p.line(X(0)-2,Y(yv),X(T)+2,Y(yv))); p.dash(null);
+      // face view (wall side) beside it, holes through the 50 face
+      const fx=T+H+GAPV;
+      p.w(.25).fc(PALE).rect(X(fx),Y(0),FW*s,D*s,'B');
+      p.dash('.8 .5').w(.15).rect(X(fx),Y(0),FW*s,R*s).dash(null);
+      p.w(.2).fc('#FFFFFF'); HY.forEach(yv=>p.circ(X(fx+FW/2),Y(yv),Math.max(.5,hr*s),'B'));
+      p.w(.1).dash('1.5 .5 .3 .5').line(X(fx+FW/2),Y(0)-1.5,X(fx+FW/2),Y(D)+1.5); HY.forEach(yv=>p.line(X(fx)-1.5,Y(yv),X(fx+FW)+1.5,Y(yv))); p.dash(null);
+      { const ys=[0,R,...HY,D], lab=[]; for(let i=0;i<ys.length-1;i++) lab.push(f0(ys[i+1]-ys[i])); chainV(p,ys.map(Y),X(fx+FW)+6,lab,X(fx+FW)); }
+      dH(p,X(fx),X(fx+FW),Y(D)+5,f0(FW),Y(D),Y(D));
+      p.fc(INK).t(X(fx+FW/2)-3,Y(HY[0])-3,`${HY.length} × Ø${f1(st.legHoleD)}`,DS,{a:'r'});
+      p.fc('#55534E').t(X(fx+FW/2),Y(D)+11,'FLAT BAR FACE (WALL SIDE)',1.9,{a:'c'});
+      p.fc(INK).t(bx+bw/2,by+bh-1,`SIDE VIEW   1:${N}`,3,{f:'F2',a:'c'});
+      return;
+    }
+    N=pickScale(rw+40,rh+40,bw-mL-mR,bh-mT-mB); const s=1/N;
+    const ox=bx+mL+((bw-mL-mR)-(H+40)*s)/2+30*s, oy=by+mT+((bh-mT-mB)-(Math.max(D,R)+40)*s)/2+20*s, X=v=>ox+v*s, Y=v=>oy+v*s;
+    p.w(.45).sc(INK).line(X(0),Y(-40),X(0),Y(Math.max(D,R)+40)); p.w(.12);
+    for(let y=Y(-40);y<=Y(Math.max(D,R)+40);y+=2.2) p.line(X(0),y,X(0)-1.6,y+1.6);
+    p.fc(INK).t(X(0)-3,Y(Math.max(D,R)/2),'WALL',2,{rot:1,a:'c'});
+    p.w(.25).fc(GREY).rect(X(0),Y(0),H*s,R*s,'B');
+    if(D>R) p.rect(X(0),Y(R),R*s,(D-R)*s,'B');
+    p.fc(INK).t(X(H/2),Y(R/2)+0.8,'STILE '+f1(H),2,{a:'c'});
+    if(D>R) p.fc(INK).t(X(R)+16,Y(R+(D-R)/2),`LEG ${f0(c.legL)} — 50×50×${f1(st.strutWall)} SHS`,2).fc('#55534E').t(X(R)+16,Y(R+(D-R)/2)+2.7,`SQUARE CUT, WELDED UNDER FRAME. ${c.legPos.length} × Ø${f1(st.legHoleD)} HOLE${c.one?'':'S'}`,1.8);
+    dH(p,X(0),X(H),Y(0)-6,'PROJECTION '+f1(H),Y(0),Y(0));
+    dV(p,Y(0),Y(D),X(0)-15,'DROP '+f0(D),X(0),X(0));
+    if(c.one || c.legCC>0){ const HY=c.legPos.map(v=>R+v);
+      p.w(.2).fc('#FFFFFF'); HY.forEach(yv=>p.circ(X(R/2),Y(yv),Math.max(.6,st.legHoleD/2*s),'B'));
+      const ys=[R,...HY,D], lab=[]; for(let i=0;i<ys.length-1;i++) lab.push(f0(ys[i+1]-ys[i])); chainV(p,ys.map(Y),X(R)+8,lab,X(R)); }
+    else dV(p,Y(R),Y(D),X(R)+8,f0(c.legL),X(R),X(R));
+  } else if(job.fix==='offset'){
+    const off=+job.offset, rw=off+R, rh=H+80;
+    N=pickScale(rw,rh,bw-mL-mR,bh-mT-mB); const s=1/N;
+    const ox=bx+mL+((bw-mL-mR)-rw*s)/2, oy=by+mT+((bh-mT-mB)-H*s)/2, X=v=>ox+v*s, Y=v=>oy+v*s;
+    p.w(.45).sc(INK).line(X(0),Y(-40),X(0),Y(H+40)); p.w(.12);
+    for(let y=Y(-40);y<=Y(H+40);y+=2.2) p.line(X(0),y,X(0)-1.6,y+1.6);
+    p.fc(INK).t(X(0)-3,Y(H/2),'WALL',2,{rot:1,a:'c'});
+    p.w(.2).fc(GREY).rect(X(0),Y(0),st.flatT*s,st.cleatL*s,'B').rect(X(0),Y(H-st.cleatL),st.flatT*s,st.cleatL*s,'B');
+    p.rect(X(st.flatT),Y(0),c.armL*s,R*s,'B').rect(X(st.flatT),Y(H-R),c.armL*s,R*s,'B');
+    p.rect(X(off),Y(0),R*s,H*s,'B');
+    dH(p,X(0),X(off),Y(0)-6,'OFFSET '+f0(off),Y(0),Y(0));
+    dH(p,X(st.flatT),X(off),Y(H)+6,'ARM '+f0(c.armL),Y(H),Y(H));
+    dV(p,Y(0),Y(H),X(off+R)+7,f0(H),X(off+R),X(off+R));
+  } else {
+    const Ht=H+c.ext, rw=R+ (job.fix==='face'?40:0);
+    N=pickScale(rw+100,Ht,bw-mL-mR,bh-mT-mB); const s=1/N;
+    const ox=bx+bw/2-R*s/2, oy=by+mT+((bh-mT-mB)-Ht*s)/2, X=v=>ox+v*s, Y=v=>oy+v*s;
+    p.w(.2).sc(INK).fc(GREY).rect(X(0),Y(0),R*s,H*s,'B');
+    if(c.louvre){ p.w(.12).fc(SLAT); for(let i=0;i<c.n;i++){ const yc=R+c.endTop+i*c.pitch+c.face/2; p.poly(bladePts(R/2,yc,c.ang,0,1).map(q=>[X(q[0]),Y(q[1])]),'B'); }
+      p.fc('#55534E').t(X(R)+16,Y(H*0.3),`BLADES AT ${f1(c.ang)}°`,2).t(X(R)+16,Y(H*0.3)+2.7,`${f1(c.pitch)} C/C`,2); }
+    if(c.ext){ p.dash('1.2 .8').w(.25).rect(X(0),Y(H),R*s,c.ext*s).dash(null); p.w(.45).line(X(0)-12,Y(H),X(R)+12,Y(H)); hatch(p,X(0)-10,X(R)+12,Y(H),true);
+      dV(p,Y(H),Y(Ht),X(0)-6,f0(c.ext),X(0),X(0)); p.fc(INK).t(X(R)+3,Y(H+c.ext/2),'CORE HOLE — DEPTH / GROUT TBC',1.9); }
+    if(job.fix==='face'){ p.w(.45).line(X(0),Y(-40),X(0),Y(H+40)); p.w(.12); for(let y=Y(-40);y<=Y(H+40);y+=2.2) p.line(X(0),y,X(0)-1.6,y+1.6); p.fc(INK).t(X(0)-3,Y(H/2),'WALL',2,{rot:1,a:'c'}); }
+    dV(p,Y(0),Y(H),X(R)+7,f0(H),X(R),X(R));
+    dH(p,X(0),X(R),Y(0)-5,f0(R),Y(0),Y(0));
+    p.fc(INK).t(bx+bw/2,by+bh-8,FIXNAME[job.fix].toUpperCase()+' — FIXINGS TBC',2,{a:'c'});
+  }
+  p.fc(INK).t(bx+bw/2,by+bh-1,`SIDE VIEW   1:${N}`,3,{f:'F2',a:'c'});
+}
+
+function stanchionDetail(p,c,bx,by,bw,bh){
+  const t=st.flatT, L=st.cleatL, Wf=st.flatW, a=c.armL, gap=90, rw=t+a+gap+Wf, rh=L;
+  const mL=10,mR=16,mT=10,mB=22, N=pickScale(rw,rh,bw-mL-mR,bh-mT-mB), s=1/N;
+  const ox=bx+mL+((bw-mL-mR)-rw*s)/2, oy=by+mT+((bh-mT-mB)-rh*s)/2, X=v=>ox+v*s, Y=v=>oy+v*s;
+  // side view
+  p.w(.2).sc(INK).fc(GREY).rect(X(0),Y(0),t*s,L*s,'B').rect(X(t),Y(L-R),a*s,R*s,'B');
+  p.dash('.8 .5').w(.12).line(X(t),Y(L-R+st.railWall),X(t+a),Y(L-R+st.railWall)).line(X(t),Y(L-st.railWall),X(t+a),Y(L-st.railWall)).dash(null);
+  dV(p,Y(0),Y(L),X(0)-5,f0(L),X(0),X(0));
+  dH(p,X(0),X(t),Y(0)-4,f1(t),Y(0),Y(0));
+  dH(p,X(t),X(t+a),Y(L)+5,'ARM '+f0(a),Y(L),Y(L));
+  dH(p,X(0),X(t+a),Y(L)+11,f0(t+a)+' OFFSET',Y(L),Y(L));
+  p.fc(INK).t(X(t+a/2),Y(L-R)-2,'WELD ALL ROUND',1.9,{a:'c'});
+  // cleat face (wall side)
+  const fx=t+a+gap, HS=cleatHolesFromTop(), h2=HS[0]; // from top of cleat
+  p.fc(PALE).w(.2).rect(X(fx),Y(0),Wf*s,L*s,'B');
+  p.dash('.8 .5').w(.15).rect(X(fx),Y(L-R),Wf*s,R*s).dash(null);
+  const r=st.holeD/2*s, cx=X(fx+Wf/2);
+  HS.forEach(hy=>{ p.w(.2).fc('#FFFFFF').circ(cx,Y(hy),r,'B'); p.w(.1).dash('1.5 .5 .3 .5').line(cx-r-1.5,Y(hy),cx+r+1.5,Y(hy)).dash(null); });
+  p.w(.1).dash('1.5 .5 .3 .5').line(cx,Y(0)-1.5,cx,Y(L)+1.5).dash(null);
+  { const ys=[0,...HS,L-R,L], lab=[]; for(let i=0;i<ys.length-1;i++) lab.push(f0(ys[i+1]-ys[i])); chainV(p,ys.map(Y),X(fx+Wf)+6,lab,X(fx+Wf)); }
+  dH(p,X(fx),X(fx+Wf),Y(L)+5,f0(Wf),Y(L),Y(L));
+  p.w(.15).line(cx-r*.7,Y(h2)-r*.7,cx-6,Y(h2)-6).line(cx-6,Y(h2)-6,cx-8,Y(h2)-6);
+  p.fc(INK).t(cx-8.5,Y(h2)-5.3,`${HS.length} × Ø${f1(st.holeD)}`,DS,{a:'r'});
+  p.fc('#55534E').t(X(t+a/2),Y(L)+16,'SIDE',2,{a:'c'}).t(X(fx+Wf/2),Y(L)+16,'CLEAT FACE (WALL SIDE)',2,{a:'c'});
+  p.fc(INK).t(bx+bw/2,by+bh-1,`STANCHION DETAIL — ${c.stan} OFF PER SCREEN   1:${N}`,3,{f:'F2',a:'c'});
+}
+
+function slotDetail(p,c,bx,by,bw,bh){
+  const fs=c.firstOuter, P=c.pitch, sf=c.face, Ls=fs+P+sf+80, mL=14,mR=10,mT=16,mB=20;
+  const N=pickScale(Ls,R,bw-mL-mR,bh-mT-mB), s=1/N;
+  const ox=bx+mL+((bw-mL-mR)-Ls*s)/2, oy=by+mT+((bh-mT-mB)-R*s)/2, X=v=>ox+v*s, Y=v=>oy+v*s;
+  p.w(.2).sc(INK).fc(GREY).rect(X(0),Y(0),Ls*s,R*s,'f');
+  p.line(X(0),Y(0),X(Ls-10),Y(0)).line(X(0),Y(R),X(Ls-10),Y(R)).line(X(0),Y(0),X(0),Y(R));
+  p.w(.25).line(X(Ls),Y(0),X(Ls-3),Y(R*.4)).line(X(Ls-3),Y(R*.4),X(Ls+3),Y(R*.6)).line(X(Ls+3),Y(R*.6),X(Ls),Y(R));
+  if(c.louvre){
+    p.w(.25).fc(SLAT); [fs,fs+P].forEach(x=>p.poly(bladePts(x+sf/2,R/2,c.ang,1,0).map(q=>[X(q[0]),Y(q[1])]),'B'));
+    const a=c.ang*Math.PI/180, cx=X(fs+P+sf/2), cy=Y(R/2);
+    p.w(.15).dash('1.5 .5 .3 .5').line(cx-14,cy,cx+14,cy).line(cx-Math.cos(a)*14,cy-Math.sin(a)*14,cx+Math.cos(a)*14,cy+Math.sin(a)*14).dash(null);
+    p.fc(INK).t(cx+15,cy+3,`${f1(c.ang)}°`,DS,{f:'F2'});
+    p.fc(INK).t(X(fs+sf/2),Y(R)+11,`65 × 16 BLADE IN SLOT`,2,{a:'c'});
+  } else { p.w(.2).fc('#FFFFFF'); [fs,fs+P].forEach(x=>p.rect(X(x),Y(R/2-8),sf*s,16*s,'B')); }
+  chainH(p,[0,fs,fs+sf,fs+P,fs+P+sf].map(X),Y(0)-5,[f0(fs),f0(sf),f1(c.gap),f0(sf)],Y(0));
+  dH(p,X(fs),X(fs+P),Y(R)+6,'PITCH '+f1(P),Y(R),Y(R));
+  dV(p,Y(0),Y(R),X(0)-4,f0(R),X(0),X(0));
+  p.fc('#55534E').t(X(0),Y(R)+13,'BOTTOM END',2);
+  p.fc(INK).t(bx+bw/2,by+bh-1,`${c.louvre?'OUTER STILE — LOUVRE BLADES AND SLOT SETOUT':'OUTER STILE — SLOT SETOUT FROM BOTTOM END'}   1:${N}`,3,{f:'F2',a:'c'});
+}
+
+function oxDetail(p,c,sc,bx,by,bw,bh){
+  const sm = bh < 70, fz = sm ? 2 : 2.4;
+  let y=by+(sm?6:10); p.fc(INK).t(bx+4,y,`OXWORKS COMPONENTS — PER SCREEN (× ${sc.qty})`,sm?2.5:3,{f:'F2'}); y+=sm?5:7;
+  const L=[[`${c.oneWay} one-way post${c.twoWay?` + ${c.twoWay} two-way`:''}`,`${f0(c.postL)} long, 50 × 50 concealed fix`],
+    [`${c.n*c.bays} slats`,`${f0(c.slatL)} long, 65 × 16 ribbed`],[`${c.capRuns} capping cover runs`,`${f0(c.H)} long`],
+    [`${c.hw.postCap} post caps`,'50 × 50 plastic'],[`${c.hw.chCap} channel caps`,'25 × 25 plastic'],[`${c.hw.hex} hex screws`,`10g × 16, ${f0(st.oxHex)} per slat end`]];
+  if(c.hw.plate) L.push([`${c.hw.plate} base plates`,'100 × 100'],[`${c.hw.csk} countersunk screws`,'12g × 50 SS']);
+  if(c.hw.coach) L.push([`${c.hw.coach} coach screws`,'10 × 75 SS']);
+  const step = Math.min(5, (bh - (sm?16:24)) / L.length);
+  L.forEach(([a,b])=>{ p.fc(INK).t(bx+4,y,a,fz,{f:'F2'}).fc('#55534E').t(bx+(sm?44:62),y,b,fz); y+=step; });
+  p.fc('#55534E').t(bx+4,by+bh-(sm?2:4),`Colour: ${job.colour||'TBC'}. Slats screwed into post channel, capping clipped over.`,sm?1.7:2);
+}
+function cutTable(p,c,sc,x,y,RH=6){
+  const rows = c.ox ? [] : c.core
+    ? [['Top rail',`50×50×${f1(st.railWall)} RHS`,c.railTop,1,'mitred 45° both ends, long point'],['Bottom rail',`50×50×${f1(st.railWall)} RHS`,c.railBot,1,'square cut, fits between posts']]
+    : [['Top & bottom rail',`50×50×${f1(st.railWall)} RHS`,c.railTop,2,'mitred 45° both ends, long point']];
+  if(c.ox){
+    rows.push(['One-way post','50×50 Oxworks',c.postL,c.oneWay,'square cut, channel faces in']);
+    if(c.twoWay) rows.push(['Two-way post','50×50 Oxworks',c.postL,c.twoWay,'square cut, channel both faces']);
+    rows.push(['Slat','65×16 ribbed',c.slatL,c.n*c.bays,`${f1(c.sgap)} gaps, ${f0(st.oxHex)} hex screws each end`]);
+    rows.push(['Capping cover','Oxworks concealed',c.H,c.capRuns,'one run per channel face']);
+  } else {
+  if(c.louvre){
+    rows.push([c.ext?'Outer post, left':'Outer stile, left','M2-502agl-sp6516-12mm-L',c.outerL,1,`${c.core?'mitred top, square bottom':'mitred 45°, long point'}. 1st slot ${f1(c.firstOuter)} up`]);
+    rows.push([c.ext?'Outer post, right':'Outer stile, right','M2-502agl-sp6516-12mm-R',c.outerL,1,`as left, opposite hand`]);
+    if(c.mid) rows.push(['Mid stile','M2-502agl-dp6516-12mm',c.midL,c.mid,`square cut, double punched, 1st slot ${f1(c.firstMid)}`]);
+  } else {
+  rows.push([c.ext?'Outer stile / post':'Outer stile',`50×50×${f1(st.stileWall)} punched`,c.outerL,2,`${c.core?'mitred top, square bottom':'mitred 45°, long point'}. 1st slot ${f1(c.firstOuter)} up from bottom`]);
+  if(c.mid) rows.push(['Mid stile',`50×50×${f1(st.stileWall)} punched`,c.midL,c.mid,`square cut, punched both faces, 1st slot ${f1(c.firstMid)}`]);
+  }
+  rows.push([c.louvre?'Blade':'Slat','65×16×1.2',c.slatL,c.n,c.louvre?`same 65 × 16 slat, set at ${f1(c.ang)}°. ${f0(st.ins)} into stile each end`:`${f0(st.ins)} into stile each end`]);
+  if(c.strut && c.fb) rows.push(['Awning flat bar',`${f0(st.fbW)}×${f0(st.fbT)} FB`,c.fbL,c.strut,`weld to back of frame, 50 up behind. ${c.holeTxt}, through ${f0(st.fbW)} face`]);
+  else if(c.strut) rows.push(['Awning leg',`50×50×${f1(st.strutWall)} SHS`,c.legL,c.strut,`square cut, weld under back corner. ${c.holeTxt}`]);
+  }
+  if(c.stan){ rows.push(['Stanchion arm',`50×50×${f1(st.railWall)} RHS`,c.armL,c.stan,'weld to cleat all round']);
+    rows.push(['Stanchion cleat',`${f0(st.flatW)}×${f1(st.flatT)} FB`,st.cleatL,c.stan,+job.cleatHoles===1?`1 × Ø${f1(st.holeD)}, ${f0((st.cleatL-R)/2)} into the ${f0(st.cleatL-R)} showing`:`2 × Ø${f1(st.holeD)} holes`]); }
+  const cols=[x, x+30, x+79, x+92, x+105, x+109];
+  p.fc(INK).t(x,y,'CUT LIST',3,{f:'F2'}); y+=5;
+  p.t(cols[0],y,'ITEM',2,{f:'F2'}).t(cols[1],y,'SECTION',2,{f:'F2'}).t(cols[2],y,'LENGTH',2,{f:'F2',a:'r'}).t(cols[3],y,'PER',2,{f:'F2',a:'r'}).t(cols[4],y,`× ${sc.qty}`,2,{f:'F2',a:'r'}).t(cols[5],y,'NOTE',2,{f:'F2'});
+  p.w(.3).sc(INK).line(x,y+1.2,x+160,y+1.2); y+=5;
+  rows.forEach(r=>{ p.fc(INK).t(cols[0],y,r[0],2.2).t(cols[1],y,r[1],2.2).t(cols[2],y,f1(r[2]),2.2,{a:'r'}).t(cols[3],y,String(r[3]),2.2,{a:'r'}).t(cols[4],y,String(r[3]*sc.qty),2.2,{a:'r'});
+    wrap(r[4],2,51).slice(0,2).forEach((l,j)=>p.t(cols[5],y+j*2.6,l,2)); p.w(.1).sc('#C8C6C0').line(x,y+2.6,x+160,y+2.6); y+=RH; });
+}
+function notesBlock(p,c,x,y,w){
+  const n = c.ox ? ['All dimensions in mm. Do not scale.',
+    `Oxworks screw-together system, ${job.colour||'colour TBC'}${cedar()?' (Red Cedar pricing)':''}.`,
+    `${c.n} slats at ${f1(c.sgap)} gaps. Top slat flush with top of post, bottom slat flush with bottom${c.ext?' of the visible post':''}.`,
+    `Slats screwed into the post channel, ${f0(st.oxHex)} hex screws each end. Capping cover clipped over to hide screws.`,
+    `Fixing: ${fixName()}.`] : ['All dimensions in mm. Do not scale.',
+    'Perimeter frame mitred 45° at the corners. Rail and stile lengths are long point to long point.',
+    c.endBot!==c.gap ? `Height held at ${f0(c.H)}: ${c.n} slats at ${f1(c.gap)} gaps, first and last gap ${f1(c.endBot)}. Slot pitch ${f1(c.pitch)} c/c.`
+      : c.louvre ? `Angled louvre stiles, ${f1(c.gap)} gap C, slot pitch ${f1(c.pitch)} c/c. Rail, ${f1(c.gap)}, then slots at ${f1(c.pitch)} c/c, finishing on ${f1(c.gap)} to the rail.`
+      : `Slats worked to spacing: ${f1(c.gap)} gap, ${f0(st.slatFace)} slat, ${f1(c.gap)} gap and so on, finishing on a ${f1(c.gap)} gap. Slot pitch ${f1(c.pitch)} c/c.`,
+    'Cut stiles so the first slot sits as scheduled. Confirm against the punched stile before cutting.',
+    `Finish: ${job.colour||'TBC'}.`,
+    `Fixing: ${FIXNAME[job.fix]}. Fixings TBC by installer.`];
+  if(!c.ox){
+  if(c.stan) n.push(`Stanchions ${c.stan} off per screen, identical. Top pair flipped. Arm welded all round to cleat. ${+job.cleatHoles===1?`1 hole per cleat, centred in the ${f0(st.cleatL-R)} showing`:'2 holes per cleat'}, Ø${f1(st.holeD)} TBC.`);
+  if(c.ext) n.push(`Posts ${f0(c.ext)} into core hole. Core depth and grout TBC.`);
+  if(c.strut && c.fb) n.push(`Awning square off the wall, held ${f1(st.fbT)} off by ${c.strut} × ${f0(st.fbW)}×${f0(st.fbT)} flat bars, ${f0(c.fbL)} long, welded to the back of the frame at the back corners (50 up behind, ${f0(c.fbBelow)} below). Fixing: ${c.holeTxt}, drilled through the ${f0(st.fbW)} face into the wall.`);
+  else if(c.strut) n.push(`Awning square off the wall. ${c.strut} legs, ${f0(c.strutL)} drop overall, welded under the back corners and fixed through the leg to the wall. ${c.holeTxt}.`);
+  }
+  n.push('Verify all sizes on site before fabrication.');
+  p.fc(INK).t(x,y,'NOTES',3,{f:'F2'}); y+=5;
+  n.forEach((t,i)=>{ const ls=wrap(t,2,w-5); p.t(x,y,String(i+1),2,{f:'F2'}); ls.forEach((l,j)=>p.t(x+4,y+j*2.7,l,2)); y+=ls.length*2.7+1; });
+}
+
+function makePDF(){
+  const T=totals(); if(!T.any){ note('Add a screen with a width and height first.'); return; }
+  const un=job.screens.findIndex(x=>{ const c=calc(x); return !c.bad && c.needsFit && !c.fit; });
+  if(un>=0){ job.sel=un; markSel(); renderResult(); const f=$('fit'); if(f.scrollIntoView) f.scrollIntoView({behavior:'smooth',block:'center'});
+    note(`Confirm the height for ${job.screens[un].name||'this screen'} first.`); return; }
+  const A4 = ($('paper').value || 'A4') === 'A4';
+  if(A4){ PW = 297; PH = 210; } else { PW = 420; PH = 297; }
+  const pages=[], date=new Date().toLocaleDateString('en-AU'), total=T.rows.length+1, client=job.name||'Client TBC';
+  const kind = isOx()?'OXWORKS SCREW-TOGETHER SCREEN':'ALUMINIUM PRIVACY SCREEN';
+  T.rows.forEach(({nm,sc,c},i)=>{
+    const p=new Pg(); pages.push(p);
+    const tb=[['CLIENT / JOB',client],['SCREEN',nm],['SIZE W × H',`${f0(c.W)} × ${f1(c.H)}`],['QTY',String(sc.qty)],['COLOUR',job.colour||'TBC'],['FIXING',fixName()],['ELEVATION SCALE',''],['DATE / SHEET',`${date}  |  ${i+1} of ${total}`]];
+    const det=(bx,by,bw,bh)=>{ if(c.ox) oxDetail(p,c,sc,bx,by,bw,bh); else if(c.stan) stanchionDetail(p,c,bx,by,bw,bh); else slotDetail(p,c,bx,by,bw,bh); };
+    const bad=c.warn.filter(w=>w[0]==='hard');
+    if(A4){
+      sheetFrameA4(p,`${client.toUpperCase()} — ${nm.toUpperCase()}`,`${kind} | FOR FABRICATION AND APPROVAL | ${(job.colour||'COLOUR TBC').toUpperCase()}`);
+      const N=elevation(p,c,8,21,167,125);
+      p.w(.12).sc('#C8C6C0').line(176,21,176,146);
+      sideView(p,c,177,21,112,63);
+      p.w(.12).sc('#C8C6C0').line(177,84.5,289,84.5);
+      det(177,85,112,61);
+      cutTable(p,c,sc,10,152,5.4);
+      tb[6][1]=`1:${N} @ A4`; titleBlockA4(p,tb);
+      if(bad.length) p.fc(INK).t(10,145,'CHECK: '+bad.map(w=>w[1]).join(' '),1.9,{f:'F2'});
+    } else {
+      sheetFrame(p,`${client.toUpperCase()} — ${nm.toUpperCase()}`,`${kind} | FABRICATION SHEET | ${(job.colour||'COLOUR TBC').toUpperCase()}`);
+      const N=elevation(p,c,12,30,232,172);
+      p.w(.15).sc('#C8C6C0').line(246,30,246,202);
+      sideView(p,c,248,30,160,88);
+      p.w(.15).sc('#C8C6C0').line(248,119,408,119);
+      det(248,121,160,81);
+      cutTable(p,c,sc,15,212);
+      notesBlock(p,c,182,212,64);
+      tb[6][1]=`1:${N} @ A3`; titleBlock(p,tb);
+      if(bad.length) p.fc(INK).t(15,200,'CHECK: '+bad.map(w=>w[1]).join(' '),2.2,{f:'F2'});
+    }
+  });
+  // material order page
+  const p=new Pg(); pages.push(p);
+  const mt=`${client.toUpperCase()} — MATERIAL ORDER`, ms=`STOCK LENGTHS AND CUTTING PLAN | KERF ${f0(st.kerf)} MM | ${isOx()?'OXWORKS PRICES SHOWN EX GST':'MITRED PIECES NESTED HEAD TO TAIL'}`;
+  if(A4) sheetFrameA4(p,mt,ms); else sheetFrame(p,mt,ms);
+  const G = A4 ? {x0:10, y0:26, colW:136, yMax:142, h:2.5, b:2, l:1.8, gap:2} : {x0:15, y0:38, colW:190, yMax:198, h:3, b:2.4, l:2.2, gap:3};
+  let x=G.x0, y=G.y0;
+  const put=(s,size,o={})=>{ if(y>G.yMax){ x+=G.colW+(A4?4:10); y=G.y0; } p.fc(INK).t(x,y,s,size,o); y+=size*1.45; };
+  T.mats.forEach(m=>{
+    if(m.each){ put(`${m.name.toUpperCase()} — ${m.spec}`,G.h,{f:'F2'}); put(`${m.qty} off   |   ${m.price?`${m.qty} × ${money(m.price)} = ${money(m.cost)} ex GST`:'PRICE NOT SET'}`,G.b); y+=G.gap; return; }
+    put(`${m.name.toUpperCase()} — ${m.spec}`,G.h,{f:'F2'});
+    put(`${m.bars.length} × ${f0(m.stock)} lengths  |  ${m.pcs.length} pcs  |  ${m.lm.toFixed(2)} lm  |  ${f0(m.util)}% used  |  ${m.price?`${m.bars.length} × ${money(m.price)} = ${money(m.cost)} ex GST`:'PRICE NOT SET'}`,G.b);
+    m.bars.forEach((b,k)=>{ wrap(`Length ${k+1}: ${b.cuts.map(q=>f1(q.cut||q.len)).join(', ')} — offcut ${f0(Math.max(0,b.left))}`,G.l,G.colW).forEach(l=>put(l,G.l)); });
+    y+=G.gap;
+  });
+  const S = A4 ? {sx:10, sy:152, sw:62, fs:1.9, lh:2.7, yEnd:200, cx:[76,120,134,152,174], ch:2.5, cf:1.9, rs:3.3} : {sx:15, sy:212, sw:100, fs:2.3, lh:3.2, yEnd:282, cx:[124,170,184,206,244], ch:3, cf:2.2, rs:4};
+  let yy=S.sy; p.fc(INK).t(S.sx,yy,'SCREENS',S.ch,{f:'F2'}); yy+=S.ch+2;
+  T.rows.forEach(({nm,sc,c})=>{ if(yy<S.yEnd){ wrap(`${nm} — ${f0(c.W)} × ${f1(c.H)} × ${sc.qty} off — ${c.n} slats, ${f1(c.ox?c.sgap:c.gap)} gaps`,S.fs,S.sw).slice(0,2).forEach(l=>{ p.t(S.sx,yy,l,S.fs); yy+=S.lh; }); yy+=0.5; } });
+  const cx=S.cx; let cy=S.sy;
+  p.fc(INK).t(cx[0],cy,'MATERIAL COSTING',S.ch,{f:'F2'}); cy+=S.ch+2;
+  p.t(cx[0],cy,'MATERIAL',S.cf-.2,{f:'F2'}).t(cx[2],cy,'QTY',S.cf-.2,{f:'F2',a:'r'}).t(cx[3],cy,'EACH',S.cf-.2,{f:'F2',a:'r'}).t(cx[4],cy,'TOTAL EX GST',S.cf-.2,{f:'F2',a:'r'});
+  p.w(.25).sc(INK).line(cx[0],cy+1,cx[4],cy+1); cy+=S.rs+.4;
+  let sub=0; T.mats.forEach(m=>{ sub+=m.cost;
+    p.fc(INK).t(cx[0],cy,m.name,S.cf).t(cx[2],cy,String(m.each?m.qty:m.bars.length),S.cf,{a:'r'}).t(cx[3],cy,m.price?money(m.price):'—',S.cf,{a:'r'}).t(cx[4],cy,m.price?money(m.cost):'NOT SET',S.cf,{a:'r'});
+    p.w(.08).sc('#C8C6C0').line(cx[0],cy+1.1,cx[4],cy+1.1); cy+=S.rs; });
+  const mk=sub*st.markup/100, pw=isOx()?0:Math.max(0,+job.powder||0), ex=sub+mk+pw, gst=ex*0.1;
+  const tl=(l,v,b)=>{ p.fc(INK).t(cx[0],cy,l,S.cf,b?{f:'F2'}:{}).t(cx[4],cy,v,S.cf,b?{f:'F2',a:'r'}:{a:'r'}); cy+=S.rs; };
+  if(st.markup) tl(`Markup ${f1(st.markup)}%`,money(mk));
+  if(!isOx()) tl(`Powder coating${job.colour?' — '+job.colour:''}`, pw?money(pw):'NOT ENTERED');
+  p.w(.25).sc(INK).line(cx[0],cy-S.rs*.65,cx[4],cy-S.rs*.65);
+  tl('Subtotal ex GST',money(ex)); tl('GST 10%',money(gst)); tl('TOTAL INC GST',money(ex+gst),true);
+  const tbm=[['CLIENT / JOB',client],['SHEET','Material order'],['SCREENS',String(T.rows.reduce((a,r)=>a+r.sc.qty,0))],['COLOUR',job.colour||'TBC'],['FIXING',fixName()],['UNITS','mm'],['PREPARED','CADify'],['DATE / SHEET',`${date}  |  ${total} of ${total}`]];
+  if(A4) titleBlockA4(p,tbm); else titleBlock(p,tbm);
+  const blob=new Blob([buildPDF(pages)],{type:'application/pdf'});
+  saveFile('CADify_'+(job.name||'job').replace(/[^\w-]+/g,'_')+'_privacy_screens_'+(A4?'A4':'A3')+'.pdf', blob);
+}
+
+/* ---------- bindings ---------- */
+function bindSettings(){
+  Object.keys(DEF).forEach(k=>{ const el=$(k); if(!el) return; el.value = st[k];
+    el.oninput = ()=>{ const v=parseFloat(el.value); if(!isNaN(v)){ st[k]=v; renderAll(); } }; });
+}
+function bindJob(){
+  $('job').value=job.name; $('colour').value=job.colour; $('gap').value=job.gap; $('gapCustom').value=job.gapCustom;
+  $('fix').value=job.fix; $('ext').value=job.ext; $('extCustom').value=job.extCustom;
+  $('offset').value=job.offset; $('stanQty').value=job.stanQty;
+  $('sys').value=job.sys; $('oxMount').value=job.oxMount; $('oxDepth').value=job.oxDepth; $('strutL').value=job.strutL; $('cleatHoles').value=String(job.cleatHoles||2); $('legHoles').value=String(job.legHoles||2); $('punch').value=job.punch||'straight'; $('louvreAng').value=job.louvreAng; $('louvreC').value=job.louvreC; $('legType').value=job.legType||'shs'; $('fbDrop').value=job.fbDrop; $('strutQty').value=job.strutQty; $('powder').value=job.powder||'';
+}
+$('job').oninput=e=>job.name=e.target.value;
+$('colour').oninput=e=>{ job.colour=e.target.value; if(isOx()) renderAll(); };
+$('sys').onchange=e=>{ job.sys=e.target.value; job.screens.forEach(x=>delete x.fit); if(isOx() && !OXCOL.includes(job.colour)){ job.colour=''; $('colour').value=''; } renderAll(); };
+$('oxMount').onchange=e=>{ job.oxMount=e.target.value; renderAll(); };
+$('oxDepth').oninput=e=>{ job.oxDepth=parseFloat(e.target.value)||0; renderAll(); };
+$('gap').onchange=e=>{ job.gap=e.target.value; job.screens.forEach(x=>delete x.fit); renderAll(); if(job.gap==='custom') $('gapCustom').focus(); };
+$('gapCustom').oninput=e=>{ job.gapCustom=parseFloat(e.target.value)||0; job.screens.forEach(x=>delete x.fit); renderAll(); };
+$('fix').onchange=e=>{ job.fix=e.target.value; renderAll(); };
+$('ext').onchange=e=>{ job.ext=e.target.value; renderAll(); if(job.ext==='custom') $('extCustom').focus(); };
+$('extCustom').oninput=e=>{ job.extCustom=parseFloat(e.target.value)||0; renderAll(); };
+$('offset').oninput=e=>{ job.offset=parseFloat(e.target.value)||0; renderAll(); };
+$('stanQty').oninput=e=>{ job.stanQty=parseInt(e.target.value)||0; renderAll(); };
+$('punch').onchange=e=>{ job.punch=e.target.value; job.screens.forEach(x=>delete x.fit); renderAll(); };
+$('louvreAng').oninput=e=>{ job.louvreAng=parseFloat(e.target.value)||0; job.screens.forEach(x=>delete x.fit); renderAll(); };
+$('louvreC').oninput=e=>{ job.louvreC=parseFloat(e.target.value)||0; job.screens.forEach(x=>delete x.fit); renderAll(); };
+$('legHoles').onchange=e=>{ job.legHoles=+e.target.value; renderAll(); };
+$('cleatHoles').onchange=e=>{ job.cleatHoles=+e.target.value; renderAll(); };
+$('legType').onchange=e=>{ job.legType=e.target.value; renderAll(); };
+$('fbDrop').oninput=e=>{ job.fbDrop=parseFloat(e.target.value)||0; renderAll(); };
+$('strutL').oninput=e=>{ job.strutL=parseFloat(e.target.value)||0; renderAll(); };
+$('strutQty').oninput=e=>{ job.strutQty=parseInt(e.target.value)||0; renderAll(); };
+$('powder').oninput=e=>{ job.powder=parseFloat(e.target.value)||0; renderTotals(); };
+$('clear').onclick=e=>{ const b=e.currentTarget;
+  if(!b.dataset.arm){ b.dataset.arm='1'; b.textContent='Tap again to clear'; clearTimeout(b._t);
+    b._t=setTimeout(()=>{ delete b.dataset.arm; b.textContent='Clear job'; },3500); return; }
+  clearTimeout(b._t); delete b.dataset.arm; b.textContent='Clear job';
+  job=JSON.parse(JSON.stringify(JOBDEF)); bindJob(); renderScreens(); renderAll(); window.scrollTo(0,0);
+  note('Job cleared. Prices and settings kept.'); };
+$('add').onclick=()=>{ const last=job.screens[job.screens.length-1]||{w:'',h:''};
+  job.screens.push({name:'Screen '+(job.screens.length+1), w:last.w, h:last.h, qty:1}); job.sel=job.screens.length-1; renderScreens(); renderAll(); };
+$('reset').onclick=()=>{ st={...DEF}; bindSettings(); renderAll(); };
+$('pdf').onclick=makePDF;
+$('print').onclick=()=>window.print();
+$('png').onclick=()=>makePNG();
+
+/* ---------- numeric fields: tap selects the whole value so typing replaces it ---------- */
+const numField = t => t && t.tagName==='INPUT' && (t.hasAttribute('inputmode') || t.dataset.k==='name');
+document.addEventListener('focusin', e=>{ const t=e.target; if(!numField(t)) return;
+  t._sel=true; setTimeout(()=>{ try{ t.setSelectionRange(0, t.value.length); }catch(_){ try{ t.select(); }catch(__){} } },0); });
+document.addEventListener('mouseup', e=>{ const t=e.target; if(numField(t) && t._sel){ e.preventDefault(); t._sel=false; } });
+document.addEventListener('input', e=>{ const t=e.target; if(t && t.tagName==='INPUT' && t.hasAttribute('inputmode')){
+  const v=t.value.replace(/[^0-9.\-]/g,''); if(v!==t.value) t.value=v; } }, true);
+
+/* ---------- PNG of the selected screen's elevation, with a CADify title strip ---------- */
+async function makePNG(){
+  const sc = job.screens[job.sel] || job.screens[0], c = sc ? calc(sc) : null;
+  if(!c || c.bad){ note('Add a screen with a width and height first.'); return; }
+  if(c.needsFit && !c.fit){ note('Confirm the height for this screen first.'); return; }
+  let svg = drawSVG(c);
+  if(!/xmlns=/.test(svg)) svg = svg.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"');
+  const vb = (svg.match(/viewBox="([^"]+)"/)||[])[1].split(/\s+/).map(Number), ar = vb[2]/vb[3];
+  const Wpx = 2400, pad = 60, head = 150, foot = 90, dw = Wpx - 2*pad;
+  let dh = dw/ar; const maxH = 1500; let dW = dw; if(dh > maxH){ dh = maxH; dW = dh*ar; }
+  svg = svg.replace('<svg', `<svg width="${dW}" height="${dh}"`);
+  const url = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'}));
+  try{
+    const img = await new Promise((ok, no)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = no; i.src = url; });
+    const cv = document.createElement('canvas'); cv.width = Wpx; cv.height = Math.round(head + dh + foot + pad);
+    const g = cv.getContext('2d');
+    g.fillStyle = '#FFFFFF'; g.fillRect(0,0,cv.width,cv.height);
+    g.strokeStyle = '#000'; g.lineWidth = 4; g.strokeRect(14,14,cv.width-28,cv.height-28);
+    g.fillStyle = '#000'; g.font = 'bold 44px Arial, Helvetica, sans-serif';
+    g.fillText(`${(job.name||'Client TBC').toUpperCase()} — ${(sc.name||'Screen').toUpperCase()}`, pad, 78);
+    g.fillStyle = '#55534E'; g.font = '28px Arial, Helvetica, sans-serif';
+    g.fillText(`${f0(c.W)} × ${f1(c.H)}  |  ${sc.qty} off  |  ${(job.colour||'colour TBC')}  |  ${fixName()}`, pad, 120);
+    g.fillStyle = '#98968F'; g.font = '64px "Times New Roman", Times, serif'; g.textAlign = 'right'; g.fillText('CADify', Wpx-pad, 92); g.textAlign = 'left';
+    g.fillStyle = '#000'; g.fillRect(14, head-4, Wpx-28, 3);
+    g.drawImage(img, pad + (dw-dW)/2, head + 20, dW, dh);
+    g.fillStyle = '#55534E'; g.font = '24px Arial, Helvetica, sans-serif';
+    g.fillText(`All dimensions in mm. Not to scale. ${new Date().toLocaleDateString('en-AU')}`, pad, cv.height - 40);
+    const blob = await new Promise(ok=>cv.toBlob(ok,'image/png'));
+    if(!blob) throw new Error('no blob');
+    saveFile('CADify_'+((job.name||'job')+'_'+(sc.name||'screen')).replace(/[^\w-]+/g,'_')+'.png', blob);
+  }catch(e){ note('Could not make the PNG on this device. Use the PDF instead.'); }
+  finally{ setTimeout(()=>URL.revokeObjectURL(url), 4000); }
+}
+
+/* ---------- saving: works as a plain file, on a website, and inside a Claude artifact ---------- */
+let DL=null;
+function note(msg){ let n=document.getElementById('toast');
+  if(!n){ n=document.createElement('div'); n.id='toast'; n.setAttribute('role','status');
+    n.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:#000;color:#fff;padding:10px 16px;font-size:14px;max-width:calc(100% - 32px);z-index:50';
+    document.body.appendChild(n); }
+  n.textContent=msg; n.hidden=false; clearTimeout(note.t); note.t=setTimeout(()=>n.hidden=true,3500); }
+function saveFile(name, blob){
+  if(DL){ DL.save({filename:name, data:blob}).catch(e=>{ if(e&&e.code!=='declined') note('Could not save the file here.'); }); return; }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
+if(window.claude && typeof window.claude.use==='function'){
+  $('print').hidden=true;
+  window.claude.use('downloads').then(d=>{ DL=d; }).catch(()=>{}); }
+$('exp').onclick=()=>{
+  const blob=new Blob([JSON.stringify({app:'cadify-privacy-screen',v:2,job,settings:st},null,2)],{type:'application/json'});
+  saveFile('CADify_screens_'+(job.name||'job').replace(/[^\w-]+/g,'_')+'.json', blob);
+};
+$('impBtn').onclick=()=>$('imp').click();
+$('imp').onchange=e=>{ const f=e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ try{ const d=JSON.parse(t); if(!d.job||!Array.isArray(d.job.screens)) throw 0;
+      job={...JSON.parse(JSON.stringify(JOBDEF)),...d.job, sel:0}; st={...DEF,...(d.settings||{})};
+      bindJob(); bindSettings(); renderScreens(); renderAll(); }
+    catch{ note('That file is not a CADify privacy screen job.'); } }); e.target.value=''; };
+
+bindJob(); bindSettings(); renderScreens(); renderAll();
+</script>
+</body>
+</html>
