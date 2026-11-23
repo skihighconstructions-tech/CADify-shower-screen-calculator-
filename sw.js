@@ -1,14 +1,14 @@
 /* CADify service worker — offline app shell.
    Bumps: change CACHE to invalidate on deploy. */
-const CACHE = 'cadify-v4-branded-icons';
+const CACHE = 'cadify-v5-logo-scaling';
 const SHELL = [
   './',
   './CADify.html',
   './cadify-bridge.js',
   './manifest.webmanifest',
-  './icon-180.png',
-  './icon-192.png',
-  './icon-512.png',
+  './cadify-logo-v2-180.png',
+  './cadify-logo-v2-192.png',
+  './cadify-logo-v2-512.png',
   './calculators/glass-setout.html',
   './calculators/pool-fence.html',
   './calculators/shower-screen.html',
