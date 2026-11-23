@@ -910,7 +910,12 @@ const App = {
       {id:'aluminium-balustrade',icon:'🛡️',name:'Aluminium Balustrade',sub:'NCC / AS 1170',live:false},
       {id:'illustrating',icon:'✏️',name:'Illustrating / Quote',sub:'estimate & illustrate',live:false},
     ];
-    document.getElementById('calcMenu').innerHTML = framed.concat(stubs).map(m=>
+    // Keep aluminium privacy screens directly below aluminium balustrades in the calculator menu.
+    const ordered = framed.filter(m=>m.id!=='aluminium-screen').concat(stubs);
+    const aluminiumScreen = framed.find(m=>m.id==='aluminium-screen');
+    const afterBalustrade = ordered.findIndex(m=>m.id==='aluminium-balustrade');
+    if(aluminiumScreen) ordered.splice(afterBalustrade+1,0,aluminiumScreen);
+    document.getElementById('calcMenu').innerHTML = ordered.map(m=>
       `<div class="mod-tile" onclick="App.openCalc('${m.id}')"><div class="ic">${m.icon}</div>
         <div style="flex:1"><div class="ttl">${m.name}</div><div class="sub">${m.sub}</div></div>
         ${m.live?'<span class="badge b-good">ready</span>':'<span class="badge b-dim">paste yours</span>'}</div>`).join('');
