@@ -1,48 +1,78 @@
-/* CADify service worker — offline app shell.
-   Bumps: change CACHE to invalidate on deploy. */
-const CACHE = 'cadify-v7-real-header-logo';
+/* CADify offline support.
+   Online pages are network-first so installed iPhone apps do not show stale headers. */
+const CACHE = 'cadify-v8-fresh-pages';
 const SHELL = [
   './',
+  './index.html',
   './CADify.html',
   './cadify-bridge.js',
   './manifest.webmanifest',
   './cadify-logo-v2-180.png',
   './cadify-logo-v2-192.png',
   './cadify-logo-v2-512.png',
-  './calculators/glass-setout.html',
-  './calculators/pool-fence.html',
-  './calculators/shower-screen.html',
   './calculators/aluminium-screen.html',
   './calculators/aluminium-balustrade.html'
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting()));
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE).then(cache =>
+      Promise.all(SHELL.map(path => cache.add(path).catch(() => null)))
+    ).then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('fetch', e => {
-  const req = e.request;
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(key => key.startsWith('cadify-') && key !== CACHE)
+        .map(key => caches.delete(key)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  // Never cache Firebase / BOM / Stripe calls — always go to network.
-  if (/googleapis|firebaseio|firestore|gstatic|stripe|bom\.gov\.au|allorigins|corsproxy/.test(url.host)) return;
-  // App shell: cache-first with background refresh.
-  e.respondWith(
-    caches.match(req).then(hit => {
-      const net = fetch(req).then(res => {
-        if (res && res.status === 200 && url.origin === location.origin) {
-          const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy));
+  if (url.origin !== self.location.origin) return;
+
+  const isDocument = req.mode === 'navigate' || req.destination === 'document' || /\.html$/i.test(url.pathname);
+  if (isDocument) {
+    // Always try the published HTML first, including calculator iframes.
+    // Use the last cached copy only when offline.
+    event.respondWith(
+      fetch(req).then(response => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          event.waitUntil(caches.open(CACHE).then(cache => cache.put(req, copy)));
         }
-        return res;
-      }).catch(() => hit);
-      return hit || net;
+        return response;
+      }).catch(() =>
+        caches.match(req, {ignoreSearch:true}).then(hit =>
+          hit || (url.pathname.endsWith('/') ? caches.match('./index.html') : null)
+          || Response.error()
+        )
+      )
+    );
+    return;
+  }
+
+  // The existing image/JS assets can work offline; refresh them in the background.
+  event.respondWith(
+    caches.match(req).then(hit => {
+      const network = fetch(req).then(response => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          event.waitUntil(caches.open(CACHE).then(cache => cache.put(req, copy)));
+        }
+        return response;
+      });
+      if (hit) {
+        event.waitUntil(network.catch(() => null));
+        return hit;
+      }
+      return network.catch(() => Response.error());
     })
   );
 });
