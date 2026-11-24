@@ -161,12 +161,16 @@ body{font-family:var(--cad-type)}
 input,select,textarea,button{font-family:inherit}
 h1,h2,h3,.logo,.ttl{font-family:var(--cad-type)}
 .stat .n,.kv,table,input[type="number"],input[inputmode="numeric"],input[inputmode="decimal"]{font-variant-numeric:tabular-nums}
+
+/* CADify real brand artwork replaces the former CD placeholder. */
+.logo .brand-img{display:block;width:56px;height:56px;object-fit:contain;border-radius:3px}
+.logo.login-logo .brand-img{width:136px;height:136px}
 </style>
 </head>
 <body>
 
 <div class="app-bar">
-  <div class="logo"><span class="mark">CD</span>CADify</div>
+  <div class="logo" aria-label="CADify"><img class="brand-img" src="cadify-logo-v2-512.png" alt="CADify logo"></div>
   <div class="spacer"></div>
   <select class="client-pick" id="clientPick" onchange="App.setActiveClient(this.value)"></select>
 </div>
@@ -1456,7 +1460,7 @@ const Auth = {
     g.style.cssText='position:fixed;inset:0;z-index:80;display:none;overflow:auto;'+
       'background:radial-gradient(ellipse at top left,rgba(255,255,255,.5),transparent 55%),var(--concrete-2);';
     g.innerHTML=`<div class="wrap" style="max-width:420px;padding-top:44px">
-      <div class="logo" style="justify-content:center;font-size:26px;margin-bottom:6px"><span class="mark">CD</span>CADify</div>
+      <div class="logo login-logo" style="justify-content:center;margin-bottom:6px"><img class="brand-img" src="cadify-logo-v2-512.png" alt="CADify logo"></div>
       <p class="muted" style="text-align:center;margin-top:0;letter-spacing:.16em;text-transform:uppercase;font-size:11px">On-site Shop Drawings</p>
       <div class="card" id="gateCard" style="margin-top:20px"></div>
       <p class="muted" style="text-align:center;font-size:11px">${DB.mode==='local'?'Local preview mode — no data leaves this device.':''}</p>

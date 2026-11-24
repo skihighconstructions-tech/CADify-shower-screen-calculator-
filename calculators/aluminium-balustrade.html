@@ -66,12 +66,17 @@ header h1,h2,summary{font-weight:700;letter-spacing:-.015em}
 .logo{font-weight:800;letter-spacing:.01em}
 .fig b{font-family:var(--technical);font-weight:600;font-size:22px}
 input,select,button,table{font-variant-numeric:tabular-nums}
+
+/* CADify branded calculator header — reusable cached artwork. */
+header .logo{display:flex;align-items:center;justify-content:center;flex:0 0 auto;border:0;background:transparent;box-shadow:none;padding:0}
+header .logo .brand-img{display:block;width:62px;height:62px;object-fit:contain;border-radius:3px}
+@media(max-width:560px){header .logo .brand-img{width:52px;height:52px}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <div class="logo" aria-label="CADify">CADify</div>
+  <div class="logo" aria-label="CADify"><img class="brand-img" src="../cadify-logo-v2-512.png" alt="CADify logo"></div>
   <div><h1>Aluminium balustrade calculator</h1><p id="subhead">Posts, rails and balusters — setout, cut list and bill of materials</p></div>
 </header>
 
