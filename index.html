@@ -154,6 +154,13 @@ small.note{color:var(--dim);font-size:11.5px;display:block;margin-top:4px}
 .tabbar button{flex:1;background:none;border:none;color:var(--dim);padding:9px;border-radius:2px;font-size:12px;font-weight:700;
   text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
 .tabbar button.on{background:var(--accent);color:var(--paper)}
+
+/* CADify drawing-office typography: local font stack for offline/PWA use. */
+:root{--cad-type:"Avenir Next","DIN Alternate","Segoe UI",Arial,sans-serif;--cad-mono:"SFMono-Regular",Menlo,Consolas,monospace}
+body{font-family:var(--cad-type)}
+input,select,textarea,button{font-family:inherit}
+h1,h2,h3,.logo,.ttl{font-family:var(--cad-type)}
+.stat .n,.kv,table,input[type="number"],input[inputmode="numeric"],input[inputmode="decimal"]{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>

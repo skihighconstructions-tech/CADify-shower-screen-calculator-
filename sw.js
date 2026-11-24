@@ -1,6 +1,6 @@
 /* CADify service worker — offline app shell.
    Bumps: change CACHE to invalidate on deploy. */
-const CACHE = 'cadify-v5-logo-scaling';
+const CACHE = 'cadify-v6-cad-typography';
 const SHELL = [
   './',
   './CADify.html',
