@@ -1564,7 +1564,19 @@ const Auth = {
 
 /* PWA: register the service worker when served over http(s) */
 if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  let cadifyUpdateRegistration;
+  window.addEventListener('load', async ()=>{
+    try {
+      cadifyUpdateRegistration = await navigator.serviceWorker.register('sw.js',{updateViaCache:'none'});
+      await cadifyUpdateRegistration.update();
+    } catch(e) {}
+  });
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState==='visible' && cadifyUpdateRegistration){
+      cadifyUpdateRegistration.update().catch(()=>{});
+    }
+  });
+
 }
 
 document.addEventListener('DOMContentLoaded',()=>Auth.init());
