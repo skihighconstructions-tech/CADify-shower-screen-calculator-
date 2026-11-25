@@ -1,6 +1,6 @@
 /* CADify offline support.
    Online pages are network-first so installed iPhone apps do not show stale headers. */
-const CACHE = 'cadify-v10-clean-wordmark';
+const CACHE = 'cadify-v11-startup-animation';
 const SHELL = [
   './',
   './index.html',
