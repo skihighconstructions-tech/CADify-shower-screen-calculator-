@@ -168,7 +168,7 @@ h1{font-weight:700;letter-spacing:.025em}
 /* Use the full original CADify wordmark; crop the square asset's empty margins. */
 .app-bar{gap:12px;padding-bottom:9px}
 .logo{flex:0 0 auto;min-width:0}
-.logo .brand-img{display:block;width:112px;height:66px;object-fit:cover;object-position:center;border-radius:0}
+.logo .brand-img{display:block;width:112px;height:66px;color:var(--brand);flex-shrink:0;overflow:visible;border-radius:0}
 .logo.login-logo .brand-img{width:190px;height:115px}
 @media(max-width:360px){.logo .brand-img{width:96px;height:57px}.app-bar{gap:6px;padding-left:10px;padding-right:10px}.client-pick{max-width:44vw}}
 </style>
@@ -176,7 +176,7 @@ h1{font-weight:700;letter-spacing:.025em}
 <body>
 
 <div class="app-bar">
-  <div class="logo" aria-label="CADify"><img class="brand-img" src="cadify-logo-v2-512.png" alt="CADify logo"></div>
+  <div class="logo" aria-label="CADify"><svg class="brand-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 142" role="img" aria-label="CADify — On-site Shop Drawings"><path d="M106 128H9V9H231V128H226" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/><text x="120" y="83" text-anchor="middle" font-family="Georgia,Times New Roman,serif" font-size="53" font-weight="700" textLength="200" lengthAdjust="spacingAndGlyphs" fill="currentColor">CADify</text><text x="111" y="131" font-family="Arial,Helvetica,sans-serif" font-size="10" font-weight="600" letter-spacing=".35" textLength="111" lengthAdjust="spacingAndGlyphs" fill="currentColor">On-site Shop Drawings</text></svg></div>
   <div class="spacer"></div>
   <select class="client-pick" id="clientPick" onchange="App.setActiveClient(this.value)"></select>
 </div>
@@ -1466,7 +1466,7 @@ const Auth = {
     g.style.cssText='position:fixed;inset:0;z-index:80;display:none;overflow:auto;'+
       'background:radial-gradient(ellipse at top left,rgba(255,255,255,.5),transparent 55%),var(--concrete-2);';
     g.innerHTML=`<div class="wrap" style="max-width:420px;padding-top:44px">
-      <div class="logo login-logo" style="justify-content:center;margin-bottom:6px"><img class="brand-img" src="cadify-logo-v2-512.png" alt="CADify logo"></div>
+      <div class="logo login-logo" style="justify-content:center;margin-bottom:6px"><svg class="brand-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 142" role="img" aria-label="CADify — On-site Shop Drawings"><path d="M106 128H9V9H231V128H226" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/><text x="120" y="83" text-anchor="middle" font-family="Georgia,Times New Roman,serif" font-size="53" font-weight="700" textLength="200" lengthAdjust="spacingAndGlyphs" fill="currentColor">CADify</text><text x="111" y="131" font-family="Arial,Helvetica,sans-serif" font-size="10" font-weight="600" letter-spacing=".35" textLength="111" lengthAdjust="spacingAndGlyphs" fill="currentColor">On-site Shop Drawings</text></svg></div>
       <p class="muted" style="text-align:center;margin-top:0;letter-spacing:.16em;text-transform:uppercase;font-size:11px">On-site Shop Drawings</p>
       <div class="card" id="gateCard" style="margin-top:20px"></div>
       <p class="muted" style="text-align:center;font-size:11px">${DB.mode==='local'?'Local preview mode — no data leaves this device.':''}</p>
