@@ -1,6 +1,6 @@
 /* CADify offline support.
    Online pages are network-first so installed iPhone apps do not show stale headers. */
-const CACHE = 'cadify-v8-fresh-pages';
+const CACHE = 'cadify-v9-drafting-brand';
 const SHELL = [
   './',
   './index.html',
