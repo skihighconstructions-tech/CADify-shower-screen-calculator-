@@ -1,6 +1,6 @@
 /* CADify offline support.
    Online pages are network-first so installed iPhone apps do not show stale headers. */
-const CACHE = 'cadify-v11-startup-animation';
+const CACHE = 'cadify-v12-fresh-launch';
 const SHELL = [
   './',
   './index.html',
@@ -17,7 +17,7 @@ const SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE).then(cache =>
-      Promise.all(SHELL.map(path => cache.add(path).catch(() => null)))
+      Promise.all(SHELL.map(path => cache.add(new Request(path, {cache:'reload'})).catch(() => null)))
     ).then(() => self.skipWaiting())
   );
 });
@@ -38,19 +38,19 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
 
   const isDocument = req.mode === 'navigate' || req.destination === 'document' || /\.html$/i.test(url.pathname);
-  if (isDocument) {
+  if (isDocument || /\/(cadify-bridge\.js|manifest\.webmanifest)$/.test(url.pathname)) {
     // Always try the published HTML first, including calculator iframes.
     // Use the last cached copy only when offline.
     event.respondWith(
-      fetch(req).then(response => {
+      fetch(req, {cache:'no-store'}).then(response => {
         if (response && response.ok) {
           const copy = response.clone();
           event.waitUntil(caches.open(CACHE).then(cache => cache.put(req, copy)));
         }
         return response;
       }).catch(() =>
-        caches.match(req, {ignoreSearch:true}).then(hit =>
-          hit || (url.pathname.endsWith('/') ? caches.match('./index.html') : null)
+        caches.open(CACHE).then(cache => cache.match(req, {ignoreSearch:true})).then(hit =>
+          hit || (url.pathname.endsWith('/') ? caches.open(CACHE).then(cache => cache.match('./index.html')) : null)
           || Response.error()
         )
       )
@@ -60,7 +60,7 @@ self.addEventListener('fetch', event => {
 
   // The existing image/JS assets can work offline; refresh them in the background.
   event.respondWith(
-    caches.match(req).then(hit => {
+    caches.open(CACHE).then(cache => cache.match(req)).then(hit => {
       const network = fetch(req).then(response => {
         if (response && response.ok) {
           const copy = response.clone();
